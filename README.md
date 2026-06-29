@@ -1,0 +1,296 @@
+# python-gen
+
+`python-gen` is a small prototype for deriving operation-specific API models
+from a single domain model.
+
+The core goal is to avoid hand-writing separate `Create`, `Read`, and `Update`
+models for every domain object. Instead, the user declares which fields belong
+to each operation, and the library generates concrete model classes that can be
+used as FastAPI request or response types.
+
+Today the prototype supports:
+
+- dataclass domain models as input
+- declarative field projections, including nested fields
+- generated Pydantic v2 output models
+- generated dataclass output models
+- partial update models with unset-vs-`None` semantics
+- factory functions that instantiate the generated models
+
+The intended direction is broader:
+
+- dataclass or Pydantic domain models as input
+- Pydantic, dataclass, or other framework-specific classes as output
+- first-class operation semantics for create, update, and read views
+- conversion from generated operation models back into application/domain
+  objects where needed
+
+## Why This Exists
+
+Python API projects often start with one domain model and quickly grow several
+similar shapes around it:
+
+- a create model for fields accepted when inserting a new object
+- an update model for fields accepted when changing an existing object
+- a read model for fields returned from the API
+- sometimes additional public, private, admin, or partial variants
+
+That model explosion becomes noisy because most variants are not conceptually
+new domain objects. They are views over the same object with different allowed
+fields and validation/output targets.
+
+This project experiments with expressing those views declaratively:
+
+```python
+UserAPI = api(
+    user,
+    renderer=PydanticRenderer(),
+    read=views.name + views.address.city,
+    update=views.name,
+    create=views.name + views.address.city + views.address.zip,
+)
+```
+
+From that declaration, the library creates:
+
+- `UserAPI.create_model`
+- `UserAPI.read_model`
+- `UserAPI.update_model`
+
+Each generated model is a real class and can be passed to tools such as FastAPI.
+
+## Example
+
+Given dataclass domain models:
+
+```python
+from dataclasses import dataclass
+
+
+@dataclass(kw_only=True)
+class Address:
+    city: str
+    zip: str
+
+
+@dataclass(kw_only=True)
+class User:
+    name: str
+    email: str
+    address: Address
+```
+
+Build an entity description and typed field views:
+
+```python
+from app.encode import PydanticRenderer, api, build_entity
+from app.views import views_for
+
+user = build_entity(User)
+views = views_for(User)
+```
+
+Declare the operation-specific projections:
+
+```python
+UserAPI = api(
+    user,
+    renderer=PydanticRenderer(),
+    read=views.name + views.address.city,
+    update=views.name,
+    create=views.name + views.address.city + views.address.zip,
+)
+```
+
+Use the generated classes directly:
+
+```python
+CreateUser = UserAPI.create_model
+ReadUser = UserAPI.read_model
+UpdateUser = UserAPI.update_model
+```
+
+Or construct instances through the generated factory:
+
+```python
+instance = UserAPI.create(
+    name="Sam",
+    address={"city": "Paris", "zip": "75001"},
+)
+```
+
+With FastAPI, the generated model can be used as an endpoint type:
+
+```python
+from fastapi import FastAPI
+
+app = FastAPI()
+
+
+@app.post("/users")
+def create_user(payload: UserAPI.create_model):
+    return payload
+```
+
+For update/PATCH-style inputs, generated Pydantic models make every selected
+field optional while preserving whether a field was omitted or explicitly set to
+`None`:
+
+```python
+empty = UserAPI.update()
+empty.model_fields_set
+# set()
+
+explicit_null = UserAPI.update(name=None)
+explicit_null.model_fields_set
+# {"name"}
+
+explicit_null.model_dump(exclude_unset=True)
+# {"name": None}
+```
+
+That is the important distinction for PATCH semantics:
+
+- omitted means "do not change this field"
+- explicit `None` means "the caller intentionally sent null"
+
+## Current Architecture
+
+The prototype has four main pieces.
+
+### Entity IR
+
+`build_entity()` inspects a dataclass and turns it into a small intermediate
+representation:
+
+- `Entity` represents a structured object.
+- `Field` represents a leaf field and stores the field type.
+
+Nested dataclasses become nested `Entity` values.
+
+### View Layer
+
+`views_for()` returns a tree of selectable fields.
+
+Leaf fields can be combined with `+`:
+
+```python
+views.name + views.address.city
+```
+
+That expression becomes a projection describing which fields should appear in a
+generated model.
+
+### Projection Compiler
+
+`compile_projection()` converts selected paths into a nested spec:
+
+```python
+{
+    "name": True,
+    "address": {
+        "city": True,
+    },
+}
+```
+
+### Renderers
+
+`PydanticRenderer` turns the entity plus projection spec into a Pydantic model
+class using `pydantic.create_model()`.
+
+`DataclassRenderer` turns the same entity plus projection spec into generated
+dataclass types using `dataclasses.make_dataclass()`.
+
+Renderers are the extension point for additional output targets.
+
+## What Works Today
+
+The current implementation does achieve the narrow prototype:
+
+- It accepts dataclass input models.
+- It lets the user declaratively choose fields for create, read, and update
+  operations.
+- It generates distinct Pydantic or dataclass model classes for those
+  operations.
+- It supports nested dataclass fields in generated models.
+- It makes update fields optional/partial.
+- Pydantic update models preserve unset-vs-`None` through
+  `model_fields_set` and `model_dump(exclude_unset=True)`.
+- Dataclass update models use the exported `UNSET` sentinel for omitted fields.
+- The generated classes can be instantiated directly or through the generated
+  factory functions.
+
+You can run the example with:
+
+```bash
+uv run python -m app.example
+```
+
+Expected output:
+
+```text
+<class 'app.encode.UserCreate'>
+<class 'app.encode.UserRead'>
+<class 'app.encode.UserUpdate'>
+name='Sam' address=UserCreate_address(city='Paris', zip='75001')
+name=None
+{'name'}
+True
+UserUpdate(name=UNSET, address=UserUpdate_address(city='Paris'))
+True
+```
+
+## What Is Missing
+
+The project does not yet fully achieve the broader goal. The main missing pieces
+are:
+
+- Pydantic input model support. `build_entity()` currently requires a dataclass.
+- Defaults and optionality. Dataclass defaults, default factories, `Optional`,
+  unions, containers, and field metadata are not yet preserved carefully.
+- Domain reconstruction. Generated payload models can be instantiated, but there
+  is no generic mechanism for converting partial/generated views back into the
+  original domain class.
+- Validation metadata. Pydantic constraints, aliases, descriptions, examples,
+  and validators are not yet carried through the IR.
+- Static typing for generated views. `views.pyi` is hand-written for the sample
+  models, so this is not yet generic.
+- Collection support. Lists, dictionaries, and nested containers are not handled
+  as structured model relationships yet.
+- FastAPI response-model ergonomics. The generated Pydantic classes should work
+  as types, but the project does not include FastAPI integration tests.
+
+## Suggested Next Steps
+
+The next useful milestones are:
+
+1. Add an operation policy layer.
+   Each operation should define requiredness, optionality, defaults, and whether
+   unset fields are meaningful.
+
+2. Expand the intermediate representation.
+   The IR should preserve source model kind, field defaults, annotations,
+   metadata, aliases, validators where possible, and nested/container shapes.
+
+3. Add Pydantic input introspection.
+   `build_entity()` should be able to inspect `BaseModel` subclasses and carry
+   useful Pydantic field metadata into the IR.
+
+4. Add reconstruction support.
+   Generated operation instances should be able to produce dictionaries,
+   patches, or full domain instances depending on the operation.
+
+5. Generate or remove the hand-written `.pyi` view stubs.
+   The typed projection API is useful, but it needs a real generation story if
+   it is part of the product.
+
+## Project Layout
+
+```text
+src/app/models.py   Example dataclass domain models
+src/app/views.py    Convenience wrapper for building selectable views
+src/app/views.pyi   Hand-written typing stubs for the example views
+src/app/encode.py   Entity IR, projection compiler, renderer, and API builder
+src/app/example.py  Minimal runnable example
+```
