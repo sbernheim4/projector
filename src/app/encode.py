@@ -1,6 +1,6 @@
 from dataclasses import is_dataclass, fields as dc_fields, make_dataclass
 from collections.abc import Callable
-from typing import Any, Generic, TypeVar, Union, cast, get_type_hints
+from typing import Any, Generic, Protocol, TypeVar, Union, cast, get_type_hints
 from pydantic import BaseModel, create_model
 
 
@@ -21,6 +21,14 @@ class Entity:
     def __init__(self, name, fields):
         self.name = name
         self.fields = fields
+
+
+class SourceAdapter(Protocol):
+    def matches(self, cls: type) -> bool: ...
+
+    def name_for(self, cls: type) -> str: ...
+
+    def fields_for(self, cls: type) -> dict[str, Any]: ...
 
 
 PydanticFieldDefs = dict[str, tuple[Any, Any]]
@@ -51,22 +59,87 @@ def create_pydantic_model(name: str, fields: PydanticFieldDefs) -> type[BaseMode
     return typed_create_model(name, **fields)
 
 
-def build_entity(cls):
-    if not is_dataclass(cls):
-        raise TypeError("Must be a dataclass")
+class DataclassSourceAdapter:
+    def matches(self, cls: type) -> bool:
+        return is_dataclass(cls)
 
-    hints = get_type_hints(cls)
+    def name_for(self, cls: type) -> str:
+        return cls.__name__
+
+    def fields_for(self, cls: type) -> dict[str, Any]:
+        hints = get_type_hints(cls)
+        return {field.name: hints[field.name] for field in dc_fields(cls)}
+
+
+class PydanticSourceAdapter:
+    def matches(self, cls: type) -> bool:
+        return isinstance(cls, type) and issubclass(cls, BaseModel)
+
+    def name_for(self, cls: type) -> str:
+        return cls.__name__
+
+    def fields_for(self, cls: type) -> dict[str, Any]:
+        return {
+            name: field_info.annotation
+            for name, field_info in cls.model_fields.items()
+        }
+
+
+class PlainClassSourceAdapter:
+    def matches(self, cls: type) -> bool:
+        return isinstance(cls, type) and bool(getattr(cls, "__annotations__", None))
+
+    def name_for(self, cls: type) -> str:
+        return cls.__name__
+
+    def fields_for(self, cls: type) -> dict[str, Any]:
+        return get_type_hints(cls)
+
+
+DEFAULT_SOURCE_ADAPTERS: tuple[SourceAdapter, ...] = (
+    DataclassSourceAdapter(),
+    PydanticSourceAdapter(),
+    PlainClassSourceAdapter(),
+)
+
+
+def find_source_adapter(
+    cls: type,
+    adapters: tuple[SourceAdapter, ...],
+) -> SourceAdapter | None:
+    for adapter in adapters:
+        if adapter.matches(cls):
+            return adapter
+
+    return None
+
+
+def build_entity(
+    cls: type,
+    *,
+    adapter: SourceAdapter | None = None,
+    adapters: tuple[SourceAdapter, ...] = DEFAULT_SOURCE_ADAPTERS,
+):
+    source_adapter = adapter or find_source_adapter(cls, adapters)
+
+    if source_adapter is None:
+        raise TypeError(f"No source adapter found for {cls!r}")
+
     schema: dict[str, Entity | Field] = {}
 
-    for f in dc_fields(cls):
-        tp = hints[f.name]
+    for field_name, field_type in source_adapter.fields_for(cls).items():
+        nested_adapter = find_source_adapter(field_type, adapters)
 
-        if is_dataclass(tp):
-            schema[f.name] = build_entity(tp)
+        if nested_adapter is not None:
+            schema[field_name] = build_entity(
+                field_type,
+                adapter=nested_adapter,
+                adapters=adapters,
+            )
         else:
-            schema[f.name] = Field(tp)
+            schema[field_name] = Field(field_type)
 
-    return Entity(cls.__name__, schema)
+    return Entity(source_adapter.name_for(cls), schema)
 
 
 # =========================================================
