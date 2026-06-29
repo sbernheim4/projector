@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+*$py.class
+
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.pyrefly/
+
+.venv/
+.uv-cache/
+
+.DS_Store
+
+tests/__pycache__
+tests/__pycache__/test_encode.cpython-312-pytest-9.1.1.pyc
