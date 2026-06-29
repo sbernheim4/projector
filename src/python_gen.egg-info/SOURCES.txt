@@ -1,0 +1,9 @@
+README.md
+pyproject.toml
+src/app/encode.py
+src/app/example.py
+src/app/models.py
+src/python_gen.egg-info/PKG-INFO
+src/python_gen.egg-info/SOURCES.txt
+src/python_gen.egg-info/dependency_links.txt
+src/python_gen.egg-info/top_level.txt

@@ -1,0 +1,21 @@
+from dataclasses import dataclass
+
+
+@dataclass(kw_only=True)
+class Address:
+    city: str
+    zip: str
+
+
+@dataclass(kw_only=True)
+class Profile:
+    bio: str
+    address: Address
+
+
+@dataclass(kw_only=True)
+class User:
+    name: str
+    email: str
+    profile: Profile
+    address: Address
