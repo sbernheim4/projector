@@ -1,9 +1,9 @@
-from typing import Any, get_type_hints
+from typing import Any, get_type_hints, is_typeddict
 
 
 class TypedDictSourceAdapter:
     def matches(self, cls: type) -> bool:
-        return isinstance(cls, type) and issubclass(cls, dict) and hasattr(cls, "__total__") and hasattr(cls, "__annotations__")
+        return is_typeddict(cls)
 
     def name_for(self, cls: type) -> str:
         return cls.__name__
