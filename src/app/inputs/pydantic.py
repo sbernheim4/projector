@@ -15,4 +15,3 @@ class PydanticSourceAdapter:
         return {
             name: field_info.annotation for name, field_info in model_fields.items()
         }
-

@@ -10,4 +10,3 @@ class PlainClassSourceAdapter:
 
     def fields_for(self, cls: type) -> dict[str, Any]:
         return get_type_hints(cls)
-

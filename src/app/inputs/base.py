@@ -18,4 +18,3 @@ def find_source_adapter(
             return adapter
 
     return None
-

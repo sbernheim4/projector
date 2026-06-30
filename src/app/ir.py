@@ -72,4 +72,3 @@ def build_entity(
             schema[field_name] = Field(field_type)
 
     return Entity(source_adapter.name_for(cls), schema)
-
