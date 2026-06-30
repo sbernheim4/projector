@@ -43,8 +43,24 @@ DataclassUserAPI = api(
 )
 
 dataclass_update = DataclassUserAPI.update(address={"city": "Paris"})
-assert is_dataclass(DataclassUserAPI.update_model)
-assert dataclass_update.name is UNSET
+
+print("Pydantic models:")
+print(" ", UserAPI.create_model)
+print(" ", UserAPI.read_model)
+print(" ", UserAPI.update_model)
+print("Pydantic instance:")
+print(" ", instance)
+print(" ", update)
+print(" ", update.model_fields_set)
+
+print("Dataclass models:")
+print(" ", DataclassUserAPI.create_model)
+print(" ", DataclassUserAPI.read_model)
+print(" ", DataclassUserAPI.update_model)
+print("Dataclass instance:")
+print(" ", dataclass_update)
+print(" ", is_dataclass(DataclassUserAPI.update_model))
+print(" ", dataclass_update.name is UNSET)
 
 
 def main() -> None:
