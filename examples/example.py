@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import importlib.util
 import sys
+from typing import TypedDict
 
 import attrs
 
@@ -72,6 +73,30 @@ def run_example() -> None:
     )
     attrs_update = attrs_user_api.update(address={"city": "Paris"})
 
+    class TypedAddress(TypedDict):
+        city: str
+        zip: str
+
+    class TypedUser(TypedDict):
+        name: str
+        address: TypedAddress
+
+    typed_user = build_entity(TypedUser)
+    typed_views = views_for(TypedUser)
+
+    # Step 9: generate TypedDict models and use the returned dict values directly.
+    typed_user_api = api(
+        typed_user,
+        renderer=renderer.TypedDict,
+        create=typed_views.name + typed_views.address.city + typed_views.address.zip,
+        read=typed_views.name + typed_views.address.city,
+        update=typed_views.name,
+    )
+    typed_created = typed_user_api.create(
+        name="Sam",
+        address={"city": "Paris", "zip": "75001"},
+    )
+
     @dataclass(kw_only=True)
     class NullableUser:
         address: Address | None
@@ -79,7 +104,7 @@ def run_example() -> None:
     nullable_user = build_entity(NullableUser)
     nullable_views = views_for(NullableUser)
 
-    # Step 9: show required/optional selectors on a nullable subtree.
+    # Step 10: show required/optional selectors on a nullable subtree.
     required_user_api = api(
         nullable_user,
         renderer=renderer.Pydantic,
@@ -116,6 +141,13 @@ def run_example() -> None:
     print("  create instance:", attrs_create)
     print("  update instance:", attrs_update)
     print("  update model is attrs:", attrs.has(attrs_user_api.update_model))
+
+    print("TypedDict API")
+    print("  create model:", typed_user_api.create_model)
+    print("  read model:", typed_user_api.read_model)
+    print("  update model:", typed_user_api.update_model)
+    print("  create instance:", typed_created)
+    print("  create instance type:", type(typed_created))
 
     print("Required/Optional API")
     print("  required model:", required_user_api.create_model)

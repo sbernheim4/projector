@@ -1,4 +1,4 @@
-from .renderers import AttrsRenderer, DataclassRenderer, PydanticRenderer
+from .renderers import AttrsRenderer, DataclassRenderer, PydanticRenderer, TypedDictRenderer
 
 
 class _RendererNamespace:
@@ -13,6 +13,10 @@ class _RendererNamespace:
     @property
     def Pydantic(self) -> PydanticRenderer:
         return PydanticRenderer()
+
+    @property
+    def TypedDict(self) -> TypedDictRenderer:
+        return TypedDictRenderer()
 
 
 renderer = _RendererNamespace()
