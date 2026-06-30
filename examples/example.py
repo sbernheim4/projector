@@ -1,5 +1,6 @@
 from argparse import ArgumentParser
 from dataclasses import is_dataclass
+from dataclasses import dataclass
 from pathlib import Path
 import importlib.util
 import sys
