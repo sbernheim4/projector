@@ -1,10 +1,10 @@
 set shell := ["bash", "-lc"]
 
 example:
-	.venv/bin/python -m examples.example
+	PYTHONPATH=src .venv/bin/python -m examples.example
 
 stubs:
-	.venv/bin/python -m examples.example --generate-stub
+	PYTHONPATH=src .venv/bin/python -m examples.example --generate-stub
 
 test:
 	.venv/bin/pytest -q
