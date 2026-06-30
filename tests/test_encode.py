@@ -17,7 +17,7 @@ from app.encode import (
     build_entity,
     compile_projection,
 )
-from app.views import views_for
+from app import optional, required, views_for
 
 
 def build_user_api(renderer):
@@ -477,3 +477,44 @@ def test_compile_projection_converts_flat_and_nested_paths():
 def test_compile_projection_rejects_unknown_input():
     with pytest.raises(TypeError, match="Cannot convert"):
         compile_projection(object())
+
+
+def test_required_wrapper_makes_nullable_subtree_required_in_pydantic():
+    class Address(BaseModel):
+        city: str
+
+    class User(BaseModel):
+        address: Address | None
+
+    user = build_entity(User)
+    views = views_for(User)
+    user_api = api(
+        user,
+        renderer=PydanticRenderer(),
+        create=required(views.address.city),
+    )
+
+    with pytest.raises(ValidationError):
+        user_api.create(address=None)
+
+    created = user_api.create(address={"city": "Paris"})
+    assert created.address.city == "Paris"
+
+
+def test_optional_wrapper_keeps_nullable_subtree_optional_in_pydantic():
+    class Address(BaseModel):
+        city: str
+
+    class User(BaseModel):
+        address: Address | None
+
+    user = build_entity(User)
+    views = views_for(User)
+    user_api = api(
+        user,
+        renderer=PydanticRenderer(),
+        create=optional(views.address.city),
+    )
+
+    created = user_api.create(address=None)
+    assert created.address is None
