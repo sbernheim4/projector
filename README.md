@@ -7,10 +7,12 @@ Input:
 - dataclasses
 - Pydantic models
 - plain annotated classes
+- attrs classes
 
 Output:
 - Pydantic models
 - dataclass models
+- attrs classes
 
 The flow is:
 
@@ -54,6 +56,7 @@ And factories that instantiate those models:
 - lets you select fields with a typed projection DSL
 - compiles projections into nested specs
 - renders Pydantic or dataclass output models
+- renders attrs output models
 - lets you name each generated model however you want
 - supports partial update semantics with unset-vs-`None`
 - provides factory functions for the generated classes
@@ -114,6 +117,7 @@ Turns the IR/spec into concrete output classes.
 
 - `PydanticRenderer`
 - `DataclassRenderer`
+- `AttrsRenderer`
 
 ### `app.encode`
 
@@ -130,10 +134,11 @@ Stub generation helpers.
 
 ## What Works Today
 
-- dataclass, Pydantic, and plain-annotated input models
+- dataclass, Pydantic, attrs, and plain-annotated input models
 - nested projections
 - generated Pydantic output models
 - generated dataclass output models
+- generated attrs output models
 - partial updates with unset-vs-`None`
 - generated factories
 - consumer-owned stub generation

@@ -1,4 +1,5 @@
 from .encode import (
+    AttrsRenderer,
     DataclassRenderer,
     PydanticRenderer,
     UNSET,
@@ -9,6 +10,7 @@ from .stubgen import generate_views_pyi
 from .views import views_for
 
 __all__ = [
+    "AttrsRenderer",
     "DataclassRenderer",
     "PydanticRenderer",
     "UNSET",

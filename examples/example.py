@@ -4,7 +4,10 @@ from pathlib import Path
 import importlib.util
 import sys
 
+import attrs
+
 from app import (
+    AttrsRenderer,
     DataclassRenderer,
     PydanticRenderer,
     UNSET,
@@ -52,6 +55,22 @@ def run_example() -> None:
     # Step 6: show the dataclass update factory preserving unset-vs-None semantics.
     dataclass_update = dataclass_user_api.update(address={"city": "Paris"})
 
+    # Step 7: generate attrs models for the same projections.
+    attrs_user_api = api(
+        user,
+        renderer=AttrsRenderer(),
+        read=views.name + views.address.city,
+        update=views.name + views.address.city,
+        create=views.name + views.address.city + views.address.zip,
+    )
+
+    # Step 8: instantiate the generated attrs models through the factories.
+    attrs_create = attrs_user_api.create(
+        name="Sam",
+        address={"city": "Paris", "zip": "75001"},
+    )
+    attrs_update = attrs_user_api.update(address={"city": "Paris"})
+
     print("Pydantic API")
     print("  create model:", user_api.create_model)
     print("  read model:", user_api.read_model)
@@ -67,6 +86,14 @@ def run_example() -> None:
     print("  update instance:", dataclass_update)
     print("  update model is dataclass:", is_dataclass(dataclass_user_api.update_model))
     print("  omitted name is UNSET:", dataclass_update.name is UNSET)
+
+    print("Attrs API")
+    print("  create model:", attrs_user_api.create_model)
+    print("  read model:", attrs_user_api.read_model)
+    print("  update model:", attrs_user_api.update_model)
+    print("  create instance:", attrs_create)
+    print("  update instance:", attrs_update)
+    print("  update model is attrs:", attrs.has(attrs_user_api.update_model))
 
 
 def generate_example_stubs() -> None:
