@@ -11,7 +11,9 @@ from app import (
     api,
     build_entity,
     generate_views_pyi,
+    optional,
     renderer,
+    required,
     views_for,
 )
 
@@ -69,6 +71,20 @@ def run_example() -> None:
     )
     attrs_update = attrs_user_api.update(address={"city": "Paris"})
 
+    # Step 9: show required/optional selectors on a nullable subtree.
+    required_user_api = api(
+        user,
+        renderer=renderer.Pydantic,
+        create=required(views.address.city),
+    )
+    optional_user_api = api(
+        user,
+        renderer=renderer.Pydantic,
+        create=optional(views.address.city),
+    )
+    required_address = required_user_api.create(address={"city": "Paris"})
+    optional_address = optional_user_api.create(address=None)
+
     print("Pydantic API")
     print("  create model:", user_api.create_model)
     print("  read model:", user_api.read_model)
@@ -92,6 +108,12 @@ def run_example() -> None:
     print("  create instance:", attrs_create)
     print("  update instance:", attrs_update)
     print("  update model is attrs:", attrs.has(attrs_user_api.update_model))
+
+    print("Required/Optional API")
+    print("  required model:", required_user_api.create_model)
+    print("  optional model:", optional_user_api.create_model)
+    print("  required instance:", required_address)
+    print("  optional instance:", optional_address)
 
 
 def generate_example_stubs() -> None:
