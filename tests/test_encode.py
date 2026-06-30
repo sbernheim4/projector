@@ -520,6 +520,94 @@ def test_optional_wrapper_keeps_nullable_subtree_optional_in_pydantic():
     assert created.address is None
 
 
+def test_required_wrapper_works_for_dataclass_output():
+    from dataclasses import dataclass
+
+    @dataclass(kw_only=True)
+    class Address:
+        city: str
+
+    @dataclass(kw_only=True)
+    class User:
+        address: Address | None
+
+    user = build_entity(User)
+    views = views_for(User)
+    user_api = api(
+        user,
+        renderer=DataclassRenderer(),
+        create=required(views.address.city),
+    )
+
+    created = user_api.create(address={"city": "Paris"})
+    assert created.address.city == "Paris"
+
+
+def test_optional_wrapper_works_for_dataclass_output():
+    from dataclasses import dataclass
+
+    @dataclass(kw_only=True)
+    class Address:
+        city: str
+
+    @dataclass(kw_only=True)
+    class User:
+        address: Address | None
+
+    user = build_entity(User)
+    views = views_for(User)
+    user_api = api(
+        user,
+        renderer=DataclassRenderer(),
+        create=optional(views.address.city),
+    )
+
+    created = user_api.create(address=None)
+    assert created.address is None
+
+
+def test_required_wrapper_works_for_attrs_output():
+    @attrs.define
+    class Address:
+        city: str
+
+    @attrs.define
+    class User:
+        address: Address | None
+
+    user = build_entity(User)
+    views = views_for(User)
+    user_api = api(
+        user,
+        renderer=AttrsRenderer(),
+        create=required(views.address.city),
+    )
+
+    created = user_api.create(address={"city": "Paris"})
+    assert created.address.city == "Paris"
+
+
+def test_optional_wrapper_works_for_attrs_output():
+    @attrs.define
+    class Address:
+        city: str
+
+    @attrs.define
+    class User:
+        address: Address | None
+
+    user = build_entity(User)
+    views = views_for(User)
+    user_api = api(
+        user,
+        renderer=AttrsRenderer(),
+        create=optional(views.address.city),
+    )
+
+    created = user_api.create(address=None)
+    assert created.address is None
+
+
 def test_nullable_subtree_remains_optional_for_dataclass_output():
     from dataclasses import dataclass
 

@@ -115,6 +115,23 @@ def run_example() -> None:
     print("  required instance:", required_address)
     print("  optional instance:", optional_address)
 
+    @dataclass(kw_only=True)
+    class NullableUser:
+        address: Address | None
+
+    nullable_user = build_entity(NullableUser)
+    nullable_views = views_for(NullableUser)
+    nullable_api = api(
+        nullable_user,
+        renderer=renderer.Pydantic,
+        create=optional(nullable_views.address.city),
+    )
+    nullable_instance = nullable_api.create(address=None)
+
+    print("Nullable API")
+    print("  create model:", nullable_api.create_model)
+    print("  create instance:", nullable_instance)
+
 
 def generate_example_stubs() -> None:
     models_module = _load_example_models()
