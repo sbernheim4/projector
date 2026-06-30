@@ -18,6 +18,7 @@ class Field:
 class Entity:
     name: str
     fields: dict[str, Any]
+    nullable: bool = False
 
 
 PydanticFieldDefs = dict[str, tuple[Any, Any]]
@@ -80,7 +81,7 @@ def build_entity(
                 adapter=nested_adapter,
                 adapters=adapters,
             )
-            entity.fields["_nullable"] = Field(nullable, False)
+            entity.nullable = nullable
             schema[field_name] = entity
         else:
             schema[field_name] = Field(field_type, nullable=nullable)

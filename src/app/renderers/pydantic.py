@@ -16,6 +16,11 @@ class PydanticRenderer:
 
             if isinstance(node, Field):
                 if partial:
+                    fields[key] = (
+                        optional_update_type(node.type_),
+                        None,
+                    )
+                elif node.nullable and sub_spec.required is not True:
                     fields[key] = (optional_update_type(node.type_), None)
                 else:
                     fields[key] = (node.type_, ...)
@@ -28,6 +33,8 @@ class PydanticRenderer:
                 )
                 nested_model = create_pydantic_model(f"{name}_{key}", nested)
                 if partial and sub_spec.required is not True:
+                    fields[key] = (optional_update_type(nested_model), None)
+                elif node.nullable and sub_spec.required is not True:
                     fields[key] = (optional_update_type(nested_model), None)
                 else:
                     fields[key] = (nested_model, ...)
