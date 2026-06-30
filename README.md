@@ -10,7 +10,8 @@ used as FastAPI request or response types.
 
 ## What It Does
 
-- accepts dataclass domain models as input
+- accepts dataclass and Pydantic domain models as input
+- also accepts plain annotated classes as a lightweight fallback
 - builds a small intermediate representation of the schema
 - lets you declaratively select fields for each operation
 - generates Pydantic or dataclass output models
@@ -142,4 +143,3 @@ examples/example.py   Runnable end-to-end example
 - partial update models with unset-vs-`None` semantics
 - generated factories for both renderer styles
 - consumer-owned stub generation
-
