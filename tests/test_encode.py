@@ -1,6 +1,7 @@
 from dataclasses import is_dataclass
 from typing import TypedDict
 
+import attrs
 import pytest
 from pydantic import BaseModel, ValidationError
 
@@ -325,6 +326,55 @@ def test_typed_dict_models_can_render_pydantic_operation_models():
     assert issubclass(user_api.Create_model, BaseModel)
     assert created.address.city == "Paris"
     assert updated.model_dump(exclude_unset=True) == {}
+
+
+def test_build_entity_supports_attrs_models():
+    @attrs.define
+    class Address:
+        city: str
+        zip: str
+
+    @attrs.define
+    class User:
+        name: str
+        address: Address
+
+    entity = build_entity(User)
+
+    assert entity.name == "User"
+    assert entity.fields["name"].type_ is str
+    assert isinstance(entity.fields["address"], Entity)
+    assert entity.fields["address"].name == "Address"
+    assert entity.fields["address"].fields["zip"].type_ is str
+
+
+def test_attrs_models_can_render_dataclass_operation_models():
+    @attrs.define
+    class Address:
+        city: str
+        zip: str
+
+    @attrs.define
+    class User:
+        name: str
+        address: Address
+
+    user = build_entity(User)
+    views = views_for(User)
+    user_api = api(
+        user,
+        renderer=DataclassRenderer(),
+        Create=views.name + views.address.city,
+        Update=views.name + views.address.city,
+    )
+
+    created = user_api.Create(name="Sam", address={"city": "Paris"})
+    updated = user_api.Update()
+
+    assert is_dataclass(user_api.Create_model)
+    assert created.address.city == "Paris"
+    assert updated.name is UNSET
+    assert updated.address is UNSET
 
 
 def test_build_entity_supports_mixed_nested_source_models():

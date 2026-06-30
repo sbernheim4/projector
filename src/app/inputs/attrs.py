@@ -1,0 +1,14 @@
+from typing import Any, get_type_hints
+
+import attrs
+
+
+class AttrsSourceAdapter:
+    def matches(self, cls: type) -> bool:
+        return attrs.has(cls)
+
+    def name_for(self, cls: type) -> str:
+        return cls.__name__
+
+    def fields_for(self, cls: type) -> dict[str, Any]:
+        return get_type_hints(cls)
