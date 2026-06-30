@@ -53,3 +53,7 @@ def write_views_stub(module_name: str, entities: Iterable[Entity]) -> Path:
     target = module_path.with_suffix(".pyi")
     target.write_text(render_views_stub(module_name, entities), encoding="utf-8")
     return target
+
+
+def generate_views_pyi(module_name: str, entities: Iterable[Entity]) -> Path:
+    return write_views_stub(module_name, entities)

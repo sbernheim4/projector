@@ -1,9 +1,7 @@
 from argparse import ArgumentParser
 from dataclasses import is_dataclass
 
-from app.encode import DataclassRenderer, UNSET, build_entity, api, PydanticRenderer
-from app.views import views_for
-from app.stubgen import write_views_stub
+from app import DataclassRenderer, PydanticRenderer, UNSET, api, build_entity, generate_views_pyi, views_for
 
 from .models import Address, Profile, User
 
@@ -49,7 +47,7 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.generate_stub:
-        write_views_stub(
+        generate_views_pyi(
             "examples.models",
             [build_entity(Address), build_entity(Profile), build_entity(User)],
         )
