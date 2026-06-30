@@ -1,7 +1,63 @@
 # Projector
 
-Eliminate model explosion by deriving operation-specific models from your
-domain models, with output names and shapes you control.
+Derive operation-specific python models from existing domain models; declaratively specify the properties you want and eliminate model explosion.
+
+## Example
+
+```python
+from dataclasses import dataclass
+
+from app import api, build_entity, renderer, views_for
+
+
+# Application specific domain models:
+@dataclass(kw_only=True)
+class Address:
+    city: str
+    zip: str
+
+
+@dataclass(kw_only=True)
+class User:
+    name: str
+    address: Address
+
+
+# Derive operation specific models
+user = build_entity(User)
+views = views_for(User)
+
+UserAPI = api(
+    user,
+    renderer=renderer.Pydantic,
+    Create=views.name + views.address.city + views.address.zip,
+    Read=views.name + views.address.city,
+    Update=views.name,
+)
+
+
+def parse_user_input(user: dict):
+    new_user = UserAPI.create(name="Sam", address={"city": "Paris", "zip": "75001"})
+    return new_user
+
+def add_user_to_db(user: UserAPI.create_model):
+    db.INSERT_INTO('users.user').VALUES(user)
+```
+
+`Create`, `Read`, and `Update` are just conventions. Use any output names you
+want.
+
+That gives you:
+
+- `UserAPI.Create_model`
+- `UserAPI.Read_model`
+- `UserAPI.Update_model`
+
+And factories that instantiate those models:
+
+- `UserAPI.Create(...)`
+- `UserAPI.Read(...)`
+- `UserAPI.Update(...)`
 
 Input:
 - dataclasses
@@ -22,34 +78,6 @@ user models -> entity/projection IR -> generated output models
 
 Declaratively specify which fields belong in each output model. `Projector`
 builds the classes.
-
-## Example
-
-```python
-UserAPI = api(
-    user,
-    renderer=renderer.Pydantic,
-    Create=views.name + views.address.city + views.address.zip,
-    Read=views.name + views.address.city,
-    Update=views.name,
-)
-```
-
-`Create`, `Read`, and `Update` are just conventions. Use any output names you
-want.
-
-That gives you:
-
-- `UserAPI.Create_model`
-- `UserAPI.Read_model`
-- `UserAPI.Update_model`
-
-And factories that instantiate those models:
-
-- `UserAPI.Create(...)`
-- `UserAPI.Read(...)`
-- `UserAPI.Update(...)`
-
 ## What It Does
 
 - reads user-land model classes into a schema IR
