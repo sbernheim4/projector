@@ -70,6 +70,8 @@ def compile_projection(projection):
             if node is None:
                 node = ProjectionSpec()
                 cursor[part] = node
+            if required is not None:
+                node.required = required
             cursor = node.children
         leaf = cursor.get(path[-1])
         if leaf is None:
