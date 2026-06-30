@@ -44,7 +44,9 @@ class DataclassRenderer:
         self._models_by_name[name] = model_cls
         return model_cls
 
-    def _convert_kwargs(self, model_cls: type, kwargs: dict[str, Any]) -> dict[str, Any]:
+    def _convert_kwargs(
+        self, model_cls: type, kwargs: dict[str, Any]
+    ) -> dict[str, Any]:
         hints = get_type_hints(model_cls)
         converted = {}
 

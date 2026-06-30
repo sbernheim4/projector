@@ -1,7 +1,7 @@
 # Projector
 
-Eliminate model explosion by deriving operation specific (CRUD/Command style)
-models from your domain models
+Eliminate model explosion by deriving operation-specific models from your
+domain models, with output names and shapes you control.
 
 Input:
 - dataclasses
@@ -18,8 +18,8 @@ The flow is:
 user models -> entity/projection IR -> generated output models
 ```
 
-Declaratively specify which fields belong in each operation. `Projector` builds the
-classes.
+Declaratively specify which fields belong in each output model. `Projector`
+builds the classes.
 
 ## Example
 
@@ -27,23 +27,26 @@ classes.
 UserAPI = api(
     user,
     renderer=PydanticRenderer(),
-    read=views.name + views.address.city,
-    update=views.name,
-    create=views.name + views.address.city + views.address.zip,
+    Create=views.name + views.address.city + views.address.zip,
+    Read=views.name + views.address.city,
+    Update=views.name,
 )
 ```
 
+`Create`, `Read`, and `Update` are just conventions. Use any output names you
+want.
+
 That gives you:
 
-- `UserAPI.create_model`
-- `UserAPI.read_model`
-- `UserAPI.update_model`
+- `UserAPI.Create_model`
+- `UserAPI.Read_model`
+- `UserAPI.Update_model`
 
 And factories that instantiate those models:
 
-- `UserAPI.create(...)`
-- `UserAPI.read(...)`
-- `UserAPI.update(...)`
+- `UserAPI.Create(...)`
+- `UserAPI.Read(...)`
+- `UserAPI.Update(...)`
 
 ## What It Does
 
@@ -51,6 +54,7 @@ And factories that instantiate those models:
 - lets you select fields with a typed projection DSL
 - compiles projections into nested specs
 - renders Pydantic or dataclass output models
+- lets you name each generated model however you want
 - supports partial update semantics with unset-vs-`None`
 - provides factory functions for the generated classes
 - can generate `.pyi` stubs for consumer model modules

@@ -74,8 +74,7 @@ class PydanticSourceAdapter:
     def fields_for(self, cls: type) -> dict[str, Any]:
         model_fields = cast(Any, cls).model_fields
         return {
-            name: field_info.annotation
-            for name, field_info in model_fields.items()
+            name: field_info.annotation for name, field_info in model_fields.items()
         }
 
 
