@@ -1,4 +1,4 @@
-from typing import Any, TypedDict, get_type_hints
+from typing import Any, get_type_hints
 
 
 class TypedDictSourceAdapter:
@@ -10,4 +10,3 @@ class TypedDictSourceAdapter:
 
     def fields_for(self, cls: type) -> dict[str, Any]:
         return get_type_hints(cls)
-

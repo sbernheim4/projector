@@ -301,6 +301,32 @@ def test_typed_dict_models_can_render_dataclass_operation_models():
     assert updated.address is UNSET
 
 
+def test_typed_dict_models_can_render_pydantic_operation_models():
+    class Address(TypedDict):
+        city: str
+        zip: str
+
+    class User(TypedDict):
+        name: str
+        address: Address
+
+    user = build_entity(User)
+    views = views_for(User)
+    user_api = api(
+        user,
+        renderer=PydanticRenderer(),
+        Create=views.name + views.address.city,
+        Update=views.name + views.address.city,
+    )
+
+    created = user_api.Create(name="Sam", address={"city": "Paris"})
+    updated = user_api.Update()
+
+    assert issubclass(user_api.Create_model, BaseModel)
+    assert created.address.city == "Paris"
+    assert updated.model_dump(exclude_unset=True) == {}
+
+
 def test_build_entity_supports_mixed_nested_source_models():
     from dataclasses import dataclass
 
@@ -371,4 +397,3 @@ def test_compile_projection_converts_flat_and_nested_paths():
 def test_compile_projection_rejects_unknown_input():
     with pytest.raises(TypeError, match="Cannot convert"):
         compile_projection(object())
-
