@@ -34,7 +34,7 @@ views = views_for(User)
 UserAPI = api(
     user,
     renderer=renderer.Pydantic,
-    create=required(views.name + views.address.city + views.address.zip),
+    create=required(views.name) + optional(views.address.city + views.address.zip),
     read=optional(views.name) + optional(views.address.city),
     update=views.name,
 )
