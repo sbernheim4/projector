@@ -71,16 +71,23 @@ def run_example() -> None:
     )
     attrs_update = attrs_user_api.update(address={"city": "Paris"})
 
+    @dataclass(kw_only=True)
+    class NullableUser:
+        address: Address | None
+
+    nullable_user = build_entity(NullableUser)
+    nullable_views = views_for(NullableUser)
+
     # Step 9: show required/optional selectors on a nullable subtree.
     required_user_api = api(
-        user,
+        nullable_user,
         renderer=renderer.Pydantic,
-        create=required(views.address.city),
+        create=required(nullable_views.address.city),
     )
     optional_user_api = api(
-        user,
+        nullable_user,
         renderer=renderer.Pydantic,
-        create=optional(views.address.city),
+        create=optional(nullable_views.address.city),
     )
     required_address = required_user_api.create(address={"city": "Paris"})
     optional_address = optional_user_api.create(address=None)
@@ -115,12 +122,6 @@ def run_example() -> None:
     print("  required instance:", required_address)
     print("  optional instance:", optional_address)
 
-    @dataclass(kw_only=True)
-    class NullableUser:
-        address: Address | None
-
-    nullable_user = build_entity(NullableUser)
-    nullable_views = views_for(NullableUser)
     nullable_api = api(
         nullable_user,
         renderer=renderer.Pydantic,
