@@ -7,6 +7,7 @@ from pydantic import BaseModel, ValidationError
 
 from app.encode import (
     DataclassRenderer,
+    AttrsRenderer,
     Entity,
     Field,
     Leaf,
@@ -375,6 +376,35 @@ def test_attrs_models_can_render_dataclass_operation_models():
     assert created.address.city == "Paris"
     assert updated.name is UNSET
     assert updated.address is UNSET
+
+
+def test_attrs_models_can_render_attrs_operation_models():
+    @attrs.define
+    class Address:
+        city: str
+        zip: str
+
+    @attrs.define
+    class User:
+        name: str
+        address: Address
+
+    user = build_entity(User)
+    views = views_for(User)
+    user_api = api(
+        user,
+        renderer=AttrsRenderer(),
+        Create=views.name + views.address.city,
+        Update=views.name + views.address.city,
+    )
+
+    created = user_api.Create(name="Sam", address={"city": "Paris"})
+    updated = user_api.Update(name="Sam")
+
+    assert attrs.has(user_api.Create_model)
+    assert created.address.city == "Paris"
+    assert updated.name == "Sam"
+    assert updated.address is None
 
 
 def test_build_entity_supports_mixed_nested_source_models():

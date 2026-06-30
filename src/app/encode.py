@@ -2,10 +2,11 @@ from typing import Any
 
 from .ir import Entity, Field, UNSET, build_entity
 from .projection import Leaf, Projection, compile_projection
-from .renderers import DataclassRenderer, PydanticRenderer
+from .renderers import AttrsRenderer, DataclassRenderer, PydanticRenderer
 
 __all__ = [
     "DataclassRenderer",
+    "AttrsRenderer",
     "Entity",
     "Field",
     "Leaf",
@@ -81,4 +82,3 @@ def api(entity, renderer, **outputs):
     api_obj.renderer = renderer
 
     return api_obj
-
