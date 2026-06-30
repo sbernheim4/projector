@@ -19,18 +19,15 @@ def _render_view_class(name: str, entity: Entity, indent: int = 0) -> list[str]:
     return lines
 
 
-def render_views_stub(module_name: str, entities: Iterable[Entity]) -> str:
+def render_views_stub(_module_name: str, entities: Iterable[Entity]) -> str:
     entities = list(entities)
     if not entities:
         raise ValueError("At least one entity is required")
 
-    imports = ", ".join(entity.name for entity in entities)
     parts = [
-        "from typing import overload",
+        "from typing import Any",
         "",
         "from app.projection import Leaf",
-        "",
-        f"from {module_name} import {imports}",
         "",
     ]
 
@@ -38,12 +35,7 @@ def render_views_stub(module_name: str, entities: Iterable[Entity]) -> str:
         parts.extend(_render_view_class(f"{entity.name}View", entity))
         parts.append("")
 
-    for entity in entities:
-        parts.append("@overload")
-        parts.append(
-            f"def views_for(model_cls: type[{entity.name}]) -> {entity.name}View: ...",
-        )
-        parts.append("")
+    parts.append("def views_for(model_cls: type[Any]) -> Any: ...")
 
     return "\n".join(parts).rstrip() + "\n"
 
