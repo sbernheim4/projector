@@ -12,5 +12,7 @@ __pycache__/
 
 .DS_Store
 
+AGENTS.md
+
 tests/__pycache__
 tests/__pycache__/test_encode.cpython-312-pytest-9.1.1.pyc
