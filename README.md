@@ -81,6 +81,21 @@ And factories that instantiate those models:
 - `UserAPI.read(...)`
 - `UserAPI.update_name_command(...)`
 
+If a source model field can be `None`, you can still decide whether a specific
+output must require it or keep it optional:
+
+```python
+UserAPI = api(
+    user,
+    renderer=renderer.Pydantic,
+    create=required(views.address.city),
+    read=optional(views.address.city),
+)
+```
+
+`required(...)` applies to the whole selected subtree. `optional(...)` keeps
+that subtree nullable in the generated output.
+
 ## Supported input and output types
 
 Input:
