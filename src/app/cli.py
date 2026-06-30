@@ -49,23 +49,21 @@ def run_example() -> None:
 
     dataclass_update = dataclass_user_api.update(address={"city": "Paris"})
 
-    print("Pydantic models:")
-    print(" ", user_api.create_model)
-    print(" ", user_api.read_model)
-    print(" ", user_api.update_model)
-    print("Pydantic instance:")
-    print(" ", instance)
-    print(" ", update)
-    print(" ", update.model_fields_set)
+    print("Pydantic API")
+    print("  create model:", user_api.create_model)
+    print("  read model:", user_api.read_model)
+    print("  update model:", user_api.update_model)
+    print("  create instance:", instance)
+    print("  update instance:", update)
+    print("  update fields set:", update.model_fields_set)
 
-    print("Dataclass models:")
-    print(" ", dataclass_user_api.create_model)
-    print(" ", dataclass_user_api.read_model)
-    print(" ", dataclass_user_api.update_model)
-    print("Dataclass instance:")
-    print(" ", dataclass_update)
-    print(" ", is_dataclass(dataclass_user_api.update_model))
-    print(" ", dataclass_update.name is UNSET)
+    print("Dataclass API")
+    print("  create model:", dataclass_user_api.create_model)
+    print("  read model:", dataclass_user_api.read_model)
+    print("  update model:", dataclass_user_api.update_model)
+    print("  update instance:", dataclass_update)
+    print("  update model is dataclass:", is_dataclass(dataclass_user_api.update_model))
+    print("  omitted name is UNSET:", dataclass_update.name is UNSET)
 
 def generate_example_stubs() -> None:
     models_module = _load_example_models()
@@ -74,6 +72,7 @@ def generate_example_stubs() -> None:
     User = models_module.User
 
     generate_views_pyi("examples.models", [build_entity(model) for model in (Address, Profile, User)])
+
 
 
 def _load_example_models():
