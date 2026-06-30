@@ -2,7 +2,22 @@ from typing import overload
 
 from app.projection import Leaf
 
-from examples.models import Address, Profile, User
+
+class Address:
+    city: str
+    zip: str
+
+
+class Profile:
+    bio: str
+    address: Address
+
+
+class User:
+    name: str
+    email: str
+    profile: Profile
+    address: Address
 
 
 class AddressView:

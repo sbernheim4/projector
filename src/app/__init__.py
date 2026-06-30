@@ -10,10 +10,10 @@ from .views import views_for
 
 __all__ = [
     "DataclassRenderer",
-    "generate_views_pyi",
     "PydanticRenderer",
     "UNSET",
     "api",
     "build_entity",
+    "generate_views_pyi",
     "views_for",
 ]

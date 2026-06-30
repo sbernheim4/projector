@@ -44,5 +44,8 @@ class Leaf(Generic[T]):
     def __add__(self, other):
         return to_projection(self) + to_projection(other)
 
+    def __getattr__(self, name):
+        return Leaf(self.path + [name])
+
     def __repr__(self):
         return ".".join(self.path)
