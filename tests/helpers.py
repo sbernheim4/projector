@@ -1,10 +1,10 @@
+from dataclasses import dataclass
+
 from app import views_for
 from app.encode import api, build_entity
 
 
 def build_user_api(renderer):
-    from dataclasses import dataclass
-
     @dataclass(kw_only=True)
     class Address:
         city: str
