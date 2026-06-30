@@ -6,6 +6,7 @@ from .encode import (
     api,
     build_entity,
 )
+from .renderer import renderer
 from .stubgen import generate_views_pyi
 from .views import views_for
 
@@ -17,5 +18,6 @@ __all__ = [
     "api",
     "build_entity",
     "generate_views_pyi",
+    "renderer",
     "views_for",
 ]

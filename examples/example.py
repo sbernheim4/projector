@@ -7,13 +7,11 @@ import sys
 import attrs
 
 from app import (
-    AttrsRenderer,
-    DataclassRenderer,
-    PydanticRenderer,
     UNSET,
     api,
     build_entity,
     generate_views_pyi,
+    renderer,
     views_for,
 )
 
@@ -33,7 +31,7 @@ def run_example() -> None:
     # Step 3: generate Pydantic models for create/read/update operations.
     user_api = api(
         user,
-        renderer=PydanticRenderer(),
+        renderer=renderer.Pydantic,
         read=views.name + views.address.city,
         update=views.name,
         create=views.name + views.address.city + views.address.zip,
@@ -46,7 +44,7 @@ def run_example() -> None:
     # Step 5: generate dataclass models for the same projections.
     dataclass_user_api = api(
         user,
-        renderer=DataclassRenderer(),
+        renderer=renderer.Dataclass,
         read=views.name + views.address.city,
         update=views.name + views.address.city,
         create=views.name + views.address.city + views.address.zip,
@@ -58,7 +56,7 @@ def run_example() -> None:
     # Step 7: generate attrs models for the same projections.
     attrs_user_api = api(
         user,
-        renderer=AttrsRenderer(),
+        renderer=renderer.Attrs,
         read=views.name + views.address.city,
         update=views.name + views.address.city,
         create=views.name + views.address.city + views.address.zip,

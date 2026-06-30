@@ -28,7 +28,7 @@ builds the classes.
 ```python
 UserAPI = api(
     user,
-    renderer=PydanticRenderer(),
+    renderer=renderer.Pydantic,
     Create=views.name + views.address.city + views.address.zip,
     Read=views.name + views.address.city,
     Update=views.name,
@@ -118,6 +118,9 @@ Turns the IR/spec into concrete output classes.
 - `PydanticRenderer`
 - `DataclassRenderer`
 - `AttrsRenderer`
+- `renderer.Pydantic`
+- `renderer.Dataclass`
+- `renderer.Attrs`
 
 ### `app.encode`
 
