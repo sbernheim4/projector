@@ -1,3 +1,0 @@
-[console_scripts]
-projector-example = app.cli:run_example
-projector-generate-stubs = app.cli:generate_example_stubs

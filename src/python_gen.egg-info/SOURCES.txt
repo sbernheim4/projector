@@ -1,7 +1,6 @@
 README.md
 pyproject.toml
 src/app/__init__.py
-src/app/cli.py
 src/app/encode.py
 src/app/ir.py
 src/app/projection.py
@@ -11,7 +10,6 @@ src/app/views.py
 src/python_gen.egg-info/PKG-INFO
 src/python_gen.egg-info/SOURCES.txt
 src/python_gen.egg-info/dependency_links.txt
-src/python_gen.egg-info/entry_points.txt
 src/python_gen.egg-info/requires.txt
 src/python_gen.egg-info/top_level.txt
 tests/test_encode.py
