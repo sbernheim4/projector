@@ -1,93 +1,23 @@
 from dataclasses import make_dataclass, is_dataclass
-from typing import Any, Generic, Protocol, TypeVar, Union, cast, get_type_hints
+from typing import Any, get_type_hints
 from pydantic import BaseModel
 
 from .ir import (
     DEFAULT_SOURCE_ADAPTERS,
     Entity,
     Field,
+    PydanticFieldDefs,
     UNSET,
     dataclass_update_type,
     create_pydantic_model,
+    build_entity,
     optional_update_type,
 )
+from .projection import Leaf, Projection, compile_projection
 
 
 # =========================================================
-# 2. VIEW LAYER
-# =========================================================
-
-
-class Leaf(Generic[T]):
-    def __init__(self, path):
-        self.path = path
-
-    def __add__(self, other):
-        return to_projection(self) + to_projection(other)
-
-    def __repr__(self):
-        return ".".join(self.path)
-
-
-class ViewNode:
-    def __init__(self, entity, path=None):
-        self._entity = entity
-        self._path = path or []
-
-        for name, field in entity.fields.items():
-            if isinstance(field, Entity):
-                setattr(self, name, ViewNode(field, self._path + [name]))
-            else:
-                setattr(self, name, Leaf(self._path + [name]))
-
-    def __getattr__(self, name) -> Any:
-        return Leaf([name])
-
-
-def build_views(entity):
-    return ViewNode(entity)
-
-
-# =========================================================
-# 3. PROJECTION
-# =========================================================
-
-
-class Projection:
-    def __init__(self, paths=None):
-        self.paths = paths or []
-
-    def __add__(self, other):
-        other = to_projection(other)
-        return Projection(self.paths + other.paths)
-
-
-def to_projection(x):
-    if isinstance(x, Projection):
-        return x
-
-    if isinstance(x, Leaf):
-        return Projection([x.path])
-
-    raise TypeError(f"Cannot convert {type(x)} to Projection")
-
-
-def compile_projection(projection):
-    projection = to_projection(projection)  # ⭐ CRITICAL FIX
-
-    spec = {}
-
-    for path in projection.paths:
-        cursor = spec
-        for part in path[:-1]:
-            cursor = cursor.setdefault(part, {})
-        cursor[path[-1]] = True
-
-    return spec
-
-
-# =========================================================
-# 4. RENDERER
+# 2. RENDERER
 # =========================================================
 
 
@@ -195,7 +125,7 @@ class DataclassRenderer:
 
 
 # =========================================================
-# 5. FACTORY BUILDER (CORE FIX)
+# 3. FACTORY BUILDER (CORE FIX)
 # =========================================================
 
 
@@ -216,7 +146,7 @@ def build_model_and_factory(entity, renderer, projection, name, partial: bool = 
 
 
 # =========================================================
-# 6. API LAYER
+# 4. API LAYER
 # =========================================================
 
 
