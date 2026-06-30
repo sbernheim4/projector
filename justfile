@@ -8,3 +8,7 @@ stubs:
 
 test:
 	UV_CACHE_DIR=/private/tmp/uv-cache uv run pytest -q
+
+check:
+	ty check .
+	pyrefly check .
