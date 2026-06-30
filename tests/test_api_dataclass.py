@@ -195,3 +195,28 @@ def test_nullable_subtree_remains_optional_for_dataclass_output():
 
     created = user_api.create(address=None)
     assert created.address is None
+
+
+def test_optional_projections_can_be_composed_for_dataclass_output():
+    from dataclasses import dataclass
+
+    @dataclass(kw_only=True)
+    class Address:
+        city: str
+
+    @dataclass(kw_only=True)
+    class User:
+        name: str
+        address: Address | None
+
+    user = build_entity(User)
+    views = views_for(User)
+    user_api = api(
+        user,
+        renderer=DataclassRenderer(),
+        create=optional(views.name) + optional(views.address.city),
+    )
+
+    created = user_api.create(name="Sam", address=None)
+    assert created.name == "Sam"
+    assert created.address is None

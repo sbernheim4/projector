@@ -125,3 +125,24 @@ def test_optional_wrapper_keeps_nullable_subtree_optional_in_pydantic():
 
     created = user_api.create(address=None)
     assert created.address is None
+
+
+def test_optional_projections_can_be_composed_for_pydantic_output():
+    class Address(BaseModel):
+        city: str
+
+    class User(BaseModel):
+        name: str
+        address: Address | None
+
+    user = build_entity(User)
+    views = views_for(User)
+    user_api = api(
+        user,
+        renderer=PydanticRenderer(),
+        create=optional(views.name) + optional(views.address.city),
+    )
+
+    created = user_api.create(name="Sam", address=None)
+    assert created.name == "Sam"
+    assert created.address is None

@@ -62,7 +62,7 @@ class TypedDictRenderer:
                 field_type = field_type | None
 
             annotations[key] = field_type
-            if partial and sub_spec.required is not True:
+            if sub_spec.required is False or (partial and sub_spec.required is not True):
                 optional_keys.add(key)
             else:
                 required_keys.add(key)

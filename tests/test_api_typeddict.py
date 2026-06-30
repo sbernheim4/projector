@@ -82,8 +82,8 @@ def test_optional_wrapper_works_for_typed_dict_output():
         create=optional(views.address.city),
     )
 
-    assert user_api.create_model.__required_keys__ == frozenset({"address"})
-    assert user_api.create_model.__optional_keys__ == frozenset()
+    assert user_api.create_model.__required_keys__ == frozenset()
+    assert user_api.create_model.__optional_keys__ == frozenset({"address"})
     created = user_api.create(address=None)
     assert created["address"] is None
 
@@ -105,4 +105,48 @@ def test_nullable_subtree_remains_optional_for_typed_dict_output():
 
     assert user_api.create_model.__required_keys__ == frozenset({"address"})
     created = user_api.create(address=None)
+    assert created["address"] is None
+
+
+def test_optional_projections_can_be_composed_for_typed_dict_output():
+    class Address(TypedDict):
+        city: str
+
+    class User(TypedDict):
+        name: str
+        address: Address
+
+    user = build_entity(User)
+    views = views_for(User)
+    user_api = api(
+        user,
+        renderer=TypedDictRenderer(),
+        create=optional(views.name) + optional(views.address.city),
+    )
+
+    assert user_api.create_model.__required_keys__ == frozenset()
+    assert user_api.create_model.__optional_keys__ == frozenset({"name", "address"})
+    created = user_api.create(name="Sam", address={"city": "Paris"})
+    assert created["name"] == "Sam"
+    assert created["address"]["city"] == "Paris"
+
+
+def test_optional_projections_can_be_composed_for_typed_dict_output_with_nullable_subtree():
+    class Address(TypedDict):
+        city: str
+
+    class User(TypedDict):
+        name: str
+        address: Address | None
+
+    user = build_entity(User)
+    views = views_for(User)
+    user_api = api(
+        user,
+        renderer=TypedDictRenderer(),
+        create=optional(views.name) + optional(views.address.city),
+    )
+
+    created = user_api.create(name="Sam", address=None)
+    assert created["name"] == "Sam"
     assert created["address"] is None
