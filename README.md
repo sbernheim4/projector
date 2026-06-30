@@ -1,10 +1,11 @@
 # Projector
 
-Derive operation-specific python models from existing domain models; declaratively specify the properties you want and eliminate model explosion.
+Derive fully typed operation-specific python models from existing domain models; declaratively specify the properties you want and eliminate model explosion.
 
 ## Example
 
 ```python
+import sqlite3
 from dataclasses import dataclass
 
 from app import api, build_entity, renderer, views_for
@@ -26,38 +27,61 @@ class User:
 # Derive operation specific models
 user = build_entity(User)
 views = views_for(User)
-
 UserAPI = api(
     user,
     renderer=renderer.Pydantic,
-    Create=views.name + views.address.city + views.address.zip,
-    Read=views.name + views.address.city,
-    Update=views.name,
+    create=views.name + views.address.city + views.address.zip,
+    read=views.name + views.address.city,
+    update=views.name,
 )
 
 
-def parse_user_input(user: dict):
-    new_user = UserAPI.create(name="Sam", address={"city": "Paris", "zip": "75001"})
-    return new_user
+# Use the derived user models:
+conn = sqlite3.connect(":memory:")
+conn.execute("create table users (name text, city text, zip text)")
 
-def add_user_to_db(user: UserAPI.create_model):
-    db.INSERT_INTO('users.user').VALUES(user)
+def add_user_to_db(user: UserAPI.create_model) -> None:
+    conn.execute(
+        "insert into users (name, city, zip) values (?, ?, ?)",
+        (user.name, user.address.city, user.address.zip),
+    )
+    conn.commit()
+
+
+new_user = UserAPI.create(name="Sam", address={"city": "Paris", "zip": "75001"})
+add_user_to_db(new_user)
 ```
 
-`Create`, `Read`, and `Update` are just conventions. Use any output names you
-want.
+## More Info
+
+`create`, `read`, and `update` are just example names. Use whatever output names
+fit your application.
+
+For example:
+
+```python
+UserAPI = api(
+    user,
+    renderer=renderer.Pydantic,
+    create_user_command=views.name + views.address.city + views.address.zip,
+    read=views.name + views.address.city,
+    update_name_command=views.name,
+)
+```
 
 That gives you:
 
-- `UserAPI.Create_model`
-- `UserAPI.Read_model`
-- `UserAPI.Update_model`
+- `UserAPI.create_user_command_model`
+- `UserAPI.read_model`
+- `UserAPI.update_name_command_model`
 
 And factories that instantiate those models:
 
-- `UserAPI.Create(...)`
-- `UserAPI.Read(...)`
-- `UserAPI.Update(...)`
+- `UserAPI.create_user_command(...)`
+- `UserAPI.read(...)`
+- `UserAPI.update_name_command(...)`
+
+## Supported input and output types
 
 Input:
 - dataclasses
@@ -73,11 +97,12 @@ Output:
 The flow is:
 
 ```text
-user models -> entity/projection IR -> generated output models
+user models (dataclasses, pydantic, attrs, plain classes) -> entity/projection IR -> generated output models (pydantic, dataclasses, attrs)
 ```
 
 Declaratively specify which fields belong in each output model. `Projector`
 builds the classes.
+
 ## What It Does
 
 - reads user-land model classes into a schema IR
