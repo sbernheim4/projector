@@ -1,6 +1,6 @@
-# python-gen
+# Projector
 
-`python-gen` is a small prototype for deriving operation-specific API models
+`Projector` is a small prototype for deriving operation-specific API models
 from a single domain model.
 
 The core goal is to avoid hand-writing separate `Create`, `Read`, and `Update`
