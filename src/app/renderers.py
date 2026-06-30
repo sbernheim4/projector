@@ -4,7 +4,6 @@ from typing import Any, get_type_hints
 from pydantic import BaseModel
 
 from .ir import (
-    Entity,
     Field,
     PydanticFieldDefs,
     UNSET,
@@ -60,7 +59,7 @@ class DataclassRenderer:
         return model_cls(**converted)
 
     def _build_model(self, spec, entity, name: str, partial: bool) -> type:
-        dataclass_fields = []
+        dataclass_fields: list[Any] = []
 
         for key, sub_spec in spec.items():
             node = entity.fields[key]

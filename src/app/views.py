@@ -1,6 +1,6 @@
 from .ir import Entity
 from .projection import Leaf
-from .encode import build_entity
+from .ir import build_entity
 
 
 class ViewNode:

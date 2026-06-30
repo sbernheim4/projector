@@ -1,7 +1,4 @@
-from typing import overload
-
-from .encode import Leaf
-from .models import Address, Profile, User
+from .projection import Leaf
 
 
 class AddressView:
@@ -21,13 +18,4 @@ class UserView:
     address: AddressView
 
 
-@overload
-def views_for(model_cls: type[Address]) -> AddressView: ...
-
-
-@overload
-def views_for(model_cls: type[Profile]) -> ProfileView: ...
-
-
-@overload
-def views_for(model_cls: type[User]) -> UserView: ...
+def views_for(model_cls: object) -> UserView: ...

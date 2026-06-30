@@ -1,3 +1,9 @@
+from typing import Generic, TypeVar
+
+
+T = TypeVar("T")
+
+
 class Projection:
     def __init__(self, paths=None):
         self.paths = paths or []
@@ -31,7 +37,7 @@ def compile_projection(projection):
     return spec
 
 
-class Leaf:
+class Leaf(Generic[T]):
     def __init__(self, path):
         self.path = path
 
@@ -40,4 +46,3 @@ class Leaf:
 
     def __repr__(self):
         return ".".join(self.path)
-

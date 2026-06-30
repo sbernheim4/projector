@@ -13,7 +13,7 @@ class Field:
 @dataclass
 class Entity:
     name: str
-    fields: dict[str, "Entity | Field"]
+    fields: dict[str, Any]
 
 
 class SourceAdapter(Protocol):
@@ -72,9 +72,10 @@ class PydanticSourceAdapter:
         return cls.__name__
 
     def fields_for(self, cls: type) -> dict[str, Any]:
+        model_fields = cast(Any, cls).model_fields
         return {
             name: field_info.annotation
-            for name, field_info in cls.model_fields.items()
+            for name, field_info in model_fields.items()
         }
 
 

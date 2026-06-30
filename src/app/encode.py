@@ -3,7 +3,6 @@ from typing import Any, get_type_hints
 from pydantic import BaseModel
 
 from .ir import (
-    DEFAULT_SOURCE_ADAPTERS,
     Entity,
     Field,
     PydanticFieldDefs,
@@ -14,6 +13,20 @@ from .ir import (
     optional_update_type,
 )
 from .projection import Leaf, Projection, compile_projection
+
+__all__ = [
+    "DataclassRenderer",
+    "Entity",
+    "Field",
+    "Leaf",
+    "Projection",
+    "PydanticRenderer",
+    "UNSET",
+    "api",
+    "build_entity",
+    "build_model_and_factory",
+    "compile_projection",
+]
 
 
 # =========================================================
@@ -68,7 +81,7 @@ class DataclassRenderer:
         return model_cls(**converted)
 
     def _build_model(self, spec, entity, name: str, partial: bool) -> type:
-        dataclass_fields = []
+        dataclass_fields: list[Any] = []
 
         for key, sub_spec in spec.items():
             node = entity.fields[key]
