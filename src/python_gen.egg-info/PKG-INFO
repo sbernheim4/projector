@@ -10,53 +10,108 @@ Requires-Dist: pytest>=8.4.2
 
 # Projector
 
-Eliminate model explosion by deriving operation-specific models from your
-domain models, with output names and shapes you control.
+Derive fully typed operation-specific python models from existing domain models; declaratively specify the properties you want and eliminate model explosion.
+
+## Example
+
+```python
+import sqlite3
+from dataclasses import dataclass
+
+from app import api, build_entity, renderer, views_for
+
+
+# Application specific domain models:
+@dataclass(kw_only=True)
+class Address:
+    city: str
+    zip: str
+
+
+@dataclass(kw_only=True)
+class User:
+    name: str
+    address: Address
+
+
+# Derive operation specific models
+user = build_entity(User)
+views = views_for(User)
+UserAPI = api(
+    user,
+    renderer=renderer.Pydantic,
+    create=views.name + views.address.city + views.address.zip,
+    read=views.name + views.address.city,
+    update=views.name,
+)
+
+
+# Use the derived user models:
+conn = sqlite3.connect(":memory:")
+conn.execute("create table users (name text, city text, zip text)")
+
+def add_user_to_db(user: UserAPI.create_model) -> None:
+    conn.execute(
+        "insert into users (name, city, zip) values (?, ?, ?)",
+        (user.name, user.address.city, user.address.zip),
+    )
+    conn.commit()
+
+
+new_user = UserAPI.create(name="Sam", address={"city": "Paris", "zip": "75001"})
+add_user_to_db(new_user)
+```
+
+## More Info
+
+`create`, `read`, and `update` are just example names. Use whatever output names
+fit your application.
+
+For example:
+
+```python
+UserAPI = api(
+    user,
+    renderer=renderer.Pydantic,
+    create_user_command=views.name + views.address.city + views.address.zip,
+    read=views.name + views.address.city,
+    update_name_command=views.name,
+)
+```
+
+That gives you:
+
+- `UserAPI.create_user_command_model`
+- `UserAPI.read_model`
+- `UserAPI.update_name_command_model`
+
+And factories that instantiate those models:
+
+- `UserAPI.create_user_command(...)`
+- `UserAPI.read(...)`
+- `UserAPI.update_name_command(...)`
+
+## Supported input and output types
 
 Input:
 - dataclasses
 - Pydantic models
 - plain annotated classes
+- attrs classes
 
 Output:
 - Pydantic models
 - dataclass models
+- attrs classes
 
 The flow is:
 
 ```text
-user models -> entity/projection IR -> generated output models
+user models (dataclasses, pydantic, attrs, plain classes) -> entity/projection IR -> generated output models (pydantic, dataclasses, attrs)
 ```
 
 Declaratively specify which fields belong in each output model. `Projector`
 builds the classes.
-
-## Example
-
-```python
-UserAPI = api(
-    user,
-    renderer=PydanticRenderer(),
-    Create=views.name + views.address.city + views.address.zip,
-    Read=views.name + views.address.city,
-    Update=views.name,
-)
-```
-
-`Create`, `Read`, and `Update` are just conventions. Use any output names you
-want.
-
-That gives you:
-
-- `UserAPI.Create_model`
-- `UserAPI.Read_model`
-- `UserAPI.Update_model`
-
-And factories that instantiate those models:
-
-- `UserAPI.Create(...)`
-- `UserAPI.Read(...)`
-- `UserAPI.Update(...)`
 
 ## What It Does
 
@@ -64,6 +119,7 @@ And factories that instantiate those models:
 - lets you select fields with a typed projection DSL
 - compiles projections into nested specs
 - renders Pydantic or dataclass output models
+- renders attrs output models
 - lets you name each generated model however you want
 - supports partial update semantics with unset-vs-`None`
 - provides factory functions for the generated classes
@@ -124,6 +180,10 @@ Turns the IR/spec into concrete output classes.
 
 - `PydanticRenderer`
 - `DataclassRenderer`
+- `AttrsRenderer`
+- `renderer.Pydantic`
+- `renderer.Dataclass`
+- `renderer.Attrs`
 
 ### `app.encode`
 
@@ -140,10 +200,11 @@ Stub generation helpers.
 
 ## What Works Today
 
-- dataclass, Pydantic, and plain-annotated input models
+- dataclass, Pydantic, attrs, and plain-annotated input models
 - nested projections
 - generated Pydantic output models
 - generated dataclass output models
+- generated attrs output models
 - partial updates with unset-vs-`None`
 - generated factories
 - consumer-owned stub generation
