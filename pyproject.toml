@@ -13,6 +13,13 @@ dependencies = [
     "uvicorn>=0.34.0",
 ]
 
+[project.scripts]
+projector = "app.cli:main"
+
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [tool.setuptools]
 package-dir = {"" = "src"}
 
@@ -20,7 +27,7 @@ package-dir = {"" = "src"}
 where = ["src"]
 
 [tool.uv]
-package = false
+package = true
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

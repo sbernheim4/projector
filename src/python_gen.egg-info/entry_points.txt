@@ -1,0 +1,2 @@
+[console_scripts]
+projector = app.cli:main

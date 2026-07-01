@@ -3,9 +3,9 @@ from typing import Any, cast
 import sqlite3
 from fastapi import APIRouter, HTTPException
 
-from app import api, build_entity, renderer, views_for
+from app import api, build_entity, renderer
 
-from ..domain_models import User
+from ..domain_models import User, user_views
 from ..sql_queries import (
     CREATE_USER,
     DELETE_USER,
@@ -18,7 +18,6 @@ from ..sql_queries import (
 router = APIRouter()
 
 user_entity = build_entity(User)
-user_views = views_for(User)
 
 UserAPI = api(
     user_entity,

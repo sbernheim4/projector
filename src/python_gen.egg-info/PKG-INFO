@@ -5,12 +5,19 @@ Summary: Add your description here
 Requires-Python: >=3.12
 Description-Content-Type: text/markdown
 Requires-Dist: attrs>=24.2.0
+Requires-Dist: fastapi>=0.115.0
 Requires-Dist: pydantic>=2.13.4
 Requires-Dist: pytest>=8.4.2
+Requires-Dist: watchfiles>=1.1.0
+Requires-Dist: uvicorn>=0.34.0
 
 # Projector
 
-Derive fully typed operation-specific python models from existing domain models; declaratively specify the properties you want and eliminate model explosion.
+Derive fully typed, operation-specific, python models from existing domain models; declaratively specify the properties you want and eliminate model explosion.
+
+Domain models (IE input) can be written using dataclasses, Pydantic models, TypedDict classes, attrs classes, and plain annotated classes.
+Output can be in any of: Pydantic models, dataclass models, attrs classes, or TypedDict classes
+
 
 ## Example
 
@@ -34,14 +41,14 @@ class User:
     address: Address
 
 
-# Derive operation specific models
+# Derive operation-specific models.
 user = build_entity(User)
 views = views_for(User)
 UserAPI = api(
     user,
     renderer=renderer.Pydantic,
-    create=views.name + views.address.city + views.address.zip,
-    read=views.name + views.address.city,
+    create=required(views.name) + optional(views.address.city + views.address.zip),
+    read=optional(views.name) + optional(views.address.city),
     update=views.name,
 )
 
@@ -91,6 +98,21 @@ And factories that instantiate those models:
 - `UserAPI.read(...)`
 - `UserAPI.update_name_command(...)`
 
+If a source model field can be `None`, you can still decide whether a specific
+output must require it or keep it optional:
+
+```python
+UserAPI = api(
+    user,
+    renderer=renderer.Pydantic,
+    create=required(views.address.city),
+    read=optional(views.address.city),
+)
+```
+
+`required(...)` applies to the whole selected subtree. `optional(...)` keeps
+that subtree nullable in the generated output.
+
 ## Supported input and output types
 
 Input:
@@ -98,16 +120,18 @@ Input:
 - Pydantic models
 - plain annotated classes
 - attrs classes
+- `TypedDict` classes
 
 Output:
 - Pydantic models
 - dataclass models
 - attrs classes
+- `TypedDict` classes
 
 The flow is:
 
 ```text
-user models (dataclasses, pydantic, attrs, plain classes) -> entity/projection IR -> generated output models (pydantic, dataclasses, attrs)
+user models (dataclasses, pydantic, attrs, typed dicts, plain classes) -> entity/projection IR -> generated output models (pydantic, dataclasses, attrs, typed dicts)
 ```
 
 Declaratively specify which fields belong in each output model. `Projector`
@@ -120,6 +144,7 @@ builds the classes.
 - compiles projections into nested specs
 - renders Pydantic or dataclass output models
 - renders attrs output models
+- renders `TypedDict` output models
 - lets you name each generated model however you want
 - supports partial update semantics with unset-vs-`None`
 - provides factory functions for the generated classes
@@ -181,9 +206,11 @@ Turns the IR/spec into concrete output classes.
 - `PydanticRenderer`
 - `DataclassRenderer`
 - `AttrsRenderer`
+- `TypedDictRenderer`
 - `renderer.Pydantic`
 - `renderer.Dataclass`
 - `renderer.Attrs`
+- `renderer.TypedDict`
 
 ### `app.encode`
 
@@ -201,10 +228,12 @@ Stub generation helpers.
 ## What Works Today
 
 - dataclass, Pydantic, attrs, and plain-annotated input models
+- `TypedDict` input models
 - nested projections
 - generated Pydantic output models
 - generated dataclass output models
 - generated attrs output models
+- generated `TypedDict` output models
 - partial updates with unset-vs-`None`
 - generated factories
 - consumer-owned stub generation
