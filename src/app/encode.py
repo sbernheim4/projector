@@ -2,7 +2,12 @@ from typing import Any
 
 from .ir import Entity, Field, UNSET, build_entity
 from .projection import Leaf, Projection, compile_projection
-from .renderers import AttrsRenderer, DataclassRenderer, PydanticRenderer, TypedDictRenderer
+from .renderers import (
+    AttrsRenderer,
+    DataclassRenderer,
+    PydanticRenderer,
+    TypedDictRenderer,
+)
 
 __all__ = [
     "DataclassRenderer",

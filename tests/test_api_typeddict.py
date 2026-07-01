@@ -12,7 +12,9 @@ def test_typeddict_renderer_generates_typed_dict_operation_models():
     assert user_api.create_model.__name__ == "UserCreate"
     assert user_api.read_model.__name__ == "UserRead"
     assert user_api.update_model.__name__ == "UserUpdate"
-    assert user_api.create_model.__required_keys__ == frozenset({"name", "email", "address"})
+    assert user_api.create_model.__required_keys__ == frozenset(
+        {"name", "email", "address"}
+    )
     assert user_api.update_model.__required_keys__ == frozenset()
     assert user_api.update_model.__optional_keys__ == frozenset({"name", "address"})
     assert "name" in user_api.create_model.__annotations__

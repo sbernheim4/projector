@@ -34,4 +34,3 @@ update users
 set city = :city
 where id = :id
 """
-

@@ -56,13 +56,17 @@ class TypedDictRenderer:
                     node,
                     partial=partial,
                 )
-                field_type = self._make_typed_dict(f"{entity.name}_{key}", nested_annotations)
+                field_type = self._make_typed_dict(
+                    f"{entity.name}_{key}", nested_annotations
+                )
 
             if node.nullable and sub_spec.required is not True:
                 field_type = field_type | None
 
             annotations[key] = field_type
-            if sub_spec.required is False or (partial and sub_spec.required is not True):
+            if sub_spec.required is False or (
+                partial and sub_spec.required is not True
+            ):
                 optional_keys.add(key)
             else:
                 required_keys.add(key)

@@ -1,7 +1,13 @@
 import pytest
 
 from app import optional, required, views_for
-from app.encode import DataclassRenderer, PydanticRenderer, api, build_entity, compile_projection
+from app.encode import (
+    DataclassRenderer,
+    PydanticRenderer,
+    api,
+    build_entity,
+    compile_projection,
+)
 from app.projection import Projection
 
 

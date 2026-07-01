@@ -1,4 +1,9 @@
-from .renderers import AttrsRenderer, DataclassRenderer, PydanticRenderer, TypedDictRenderer
+from .renderers import (
+    AttrsRenderer,
+    DataclassRenderer,
+    PydanticRenderer,
+    TypedDictRenderer,
+)
 
 
 class _RendererNamespace:

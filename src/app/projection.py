@@ -10,7 +10,11 @@ class Projection:
 
     def __add__(self, other):
         other = to_projection(other)
-        required = self.required_flag if self.required_flag is not None else other.required_flag
+        required = (
+            self.required_flag
+            if self.required_flag is not None
+            else other.required_flag
+        )
         return Projection(self.paths + other.paths, required=required)
 
     def required(self):

@@ -32,4 +32,3 @@ def transaction(conn: sqlite3.Connection) -> Iterator[sqlite3.Connection]:
     except Exception:
         conn.rollback()
         raise
-
