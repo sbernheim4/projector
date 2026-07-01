@@ -23,7 +23,6 @@ from app import (
 def run_example() -> None:
     models_module = _load_example_models()
     Address = models_module.Address
-    Profile = models_module.Profile
     User = models_module.User
 
     # Step 1: build the schema IR from the user's domain models.

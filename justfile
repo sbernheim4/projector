@@ -13,5 +13,6 @@ test:
 	.venv/bin/pytest -q
 
 check:
+	ruff check .
 	ty check .
 	pyrefly check .

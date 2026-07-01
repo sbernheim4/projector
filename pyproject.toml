@@ -34,3 +34,6 @@ search-path = [
     ".",
     "src",
 ]
+
+[tool.pyright]
+pythonVersion = "3.12"
