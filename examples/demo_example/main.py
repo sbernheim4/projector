@@ -174,17 +174,17 @@ def generate_example_stubs() -> None:
     User = models_module.User
 
     generate_views_pyi(
-        "examples.models",
+        "examples.demo_example.models",
         [build_entity(model) for model in (Address, Profile, User)],
     )
 
 
 def _load_example_models():
-    module_name = "examples.models"
+    module_name = "examples.demo_example.models"
     if module_name in sys.modules:
         return sys.modules[module_name]
 
-    path = Path.cwd() / "examples" / "models.py"
+    path = Path.cwd() / "examples" / "demo_example" / "models.py"
     spec = importlib.util.spec_from_file_location(module_name, path)
     if spec is None or spec.loader is None:
         raise RuntimeError(f"Could not load example models from {path}")
