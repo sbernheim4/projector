@@ -1,4 +1,4 @@
-from typing import Any, cast
+from typing import Any
 
 import sqlite3
 from fastapi import APIRouter, HTTPException
@@ -11,10 +11,10 @@ from ..projects_sql import (
     COMPLETE_TASK,
     CREATE_PROJECT,
     DELETE_PROJECT,
-    GET_PROJECT,
     LIST_PROJECTS,
     UPDATE_PROJECT,
 )
+from ..query import TypedConnection
 
 router = APIRouter()
 
@@ -58,7 +58,13 @@ def row_to_project(row: sqlite3.Row) -> dict[str, Any]:
     }
 
 
-def configure_project_routes(conn: sqlite3.Connection) -> None:
+def map_project(row: sqlite3.Row) -> dict[str, Any]:
+    return row_to_project(row)
+
+
+def configure_project_routes(conn: TypedConnection) -> None:
+    conn.register(Project, "projects", map_project)
+
     @router.post("/projects", response_model=ProjectCreate)
     def create_project(project: ProjectCreate):
         payload = project.model_dump()
@@ -72,8 +78,10 @@ def configure_project_routes(conn: sqlite3.Connection) -> None:
             },
         )
         conn.commit()
-        row = conn.execute(GET_PROJECT, {"id": cur.lastrowid}).fetchone()
-        return row_to_project(cast(sqlite3.Row, row))
+        row = conn.SELECT(Project).WHERE(id=cur.lastrowid).one()
+        if row is None:
+            raise HTTPException(status_code=404, detail="Project not found")
+        return row
 
     @router.get("/projects", response_model=list[ProjectRead])
     def list_projects():
@@ -82,10 +90,10 @@ def configure_project_routes(conn: sqlite3.Connection) -> None:
 
     @router.get("/projects/{project_id}", response_model=ProjectRead)
     def get_project(project_id: int):
-        row = conn.execute(GET_PROJECT, {"id": project_id}).fetchone()
+        row = conn.SELECT(Project).WHERE(id=project_id).one()
         if row is None:
             raise HTTPException(status_code=404, detail="Project not found")
-        return row_to_project(cast(sqlite3.Row, row))
+        return row
 
     @router.put("/projects/{project_id}", response_model=ProjectUpdate)
     def update_project(project_id: int, project: ProjectUpdate):
@@ -101,10 +109,10 @@ def configure_project_routes(conn: sqlite3.Connection) -> None:
             },
         )
         conn.commit()
-        row = conn.execute(GET_PROJECT, {"id": project_id}).fetchone()
+        row = conn.SELECT(Project).WHERE(id=project_id).one()
         if row is None:
             raise HTTPException(status_code=404, detail="Project not found")
-        return row_to_project(cast(sqlite3.Row, row))
+        return row
 
     @router.delete("/projects/{project_id}")
     def delete_project(project_id: int):
@@ -125,10 +133,10 @@ def configure_project_routes(conn: sqlite3.Connection) -> None:
             },
         )
         conn.commit()
-        row = conn.execute(GET_PROJECT, {"id": project_id}).fetchone()
+        row = conn.SELECT(Project).WHERE(id=project_id).one()
         if row is None:
             raise HTTPException(status_code=404, detail="Project not found")
-        return row_to_project(cast(sqlite3.Row, row))
+        return row
 
     @router.post(
         "/projects/{project_id}/commands/complete-task",
@@ -142,7 +150,7 @@ def configure_project_routes(conn: sqlite3.Connection) -> None:
             },
         )
         conn.commit()
-        row = conn.execute(GET_PROJECT, {"id": project_id}).fetchone()
+        row = conn.SELECT(Project).WHERE(id=project_id).one()
         if row is None:
             raise HTTPException(status_code=404, detail="Project not found")
-        return row_to_project(cast(sqlite3.Row, row))
+        return row

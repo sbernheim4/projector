@@ -2,14 +2,16 @@ import sqlite3
 from contextlib import contextmanager
 from typing import Iterator
 
+from .query import TypedConnection
 
-def connect() -> sqlite3.Connection:
+
+def connect() -> TypedConnection:
     conn = sqlite3.connect(":memory:", check_same_thread=False)
     conn.row_factory = sqlite3.Row
-    return conn
+    return TypedConnection(conn)
 
 
-def init_db(conn: sqlite3.Connection) -> None:
+def init_db(conn: TypedConnection) -> None:
     conn.execute(
         """
         create table if not exists users (
@@ -36,7 +38,7 @@ def init_db(conn: sqlite3.Connection) -> None:
 
 
 @contextmanager
-def transaction(conn: sqlite3.Connection) -> Iterator[sqlite3.Connection]:
+def transaction(conn: TypedConnection) -> Iterator[TypedConnection]:
     try:
         yield conn
         conn.commit()

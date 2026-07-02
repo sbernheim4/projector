@@ -1,4 +1,4 @@
-from typing import Any, cast
+from typing import Any
 
 import sqlite3
 from fastapi import APIRouter, HTTPException
@@ -9,11 +9,11 @@ from ..domain_models import User, user_views
 from ..sql_queries import (
     CREATE_USER,
     DELETE_USER,
-    GET_USER,
     LIST_USERS,
     RENAME_CITY,
     UPDATE_USER,
 )
+from ..query import TypedConnection
 
 router = APIRouter()
 
@@ -55,7 +55,13 @@ def row_to_user(row: sqlite3.Row) -> dict[str, Any]:
     }
 
 
-def configure_user_routes(conn: sqlite3.Connection) -> None:
+def map_user(row: sqlite3.Row) -> dict[str, Any]:
+    return row_to_user(row)
+
+
+def configure_user_routes(conn: TypedConnection) -> None:
+    conn.register(User, "users", map_user)
+
     @router.post("/users", response_model=UserCreateModel)
     def create_user(user: UserCreateModel):
         payload = user.model_dump()
@@ -69,8 +75,10 @@ def configure_user_routes(conn: sqlite3.Connection) -> None:
             },
         )
         conn.commit()
-        row = conn.execute(GET_USER, {"id": cur.lastrowid}).fetchone()
-        return row_to_user(cast(sqlite3.Row, row))
+        row = conn.SELECT(User).WHERE(id=cur.lastrowid).one()
+        if row is None:
+            raise HTTPException(status_code=404, detail="User not found")
+        return row
 
     @router.get("/users", response_model=list[UserReadModel])
     def list_users():
@@ -79,10 +87,10 @@ def configure_user_routes(conn: sqlite3.Connection) -> None:
 
     @router.get("/users/{user_id}", response_model=UserReadModel)
     def get_user(user_id: int):
-        row = conn.execute(GET_USER, {"id": user_id}).fetchone()
+        row = conn.SELECT(User).WHERE(id=user_id).one()
         if row is None:
             raise HTTPException(status_code=404, detail="User not found")
-        return row_to_user(cast(sqlite3.Row, row))
+        return row
 
     @router.put("/users/{user_id}", response_model=UserUpdateModel)
     def update_user(user_id: int, user: UserUpdateModel):
@@ -98,10 +106,10 @@ def configure_user_routes(conn: sqlite3.Connection) -> None:
             },
         )
         conn.commit()
-        row = conn.execute(GET_USER, {"id": user_id}).fetchone()
+        row = conn.SELECT(User).WHERE(id=user_id).one()
         if row is None:
             raise HTTPException(status_code=404, detail="User not found")
-        return row_to_user(cast(sqlite3.Row, row))
+        return row
 
     @router.delete("/users/{user_id}")
     def delete_user(user_id: int):
@@ -122,11 +130,7 @@ def configure_user_routes(conn: sqlite3.Connection) -> None:
             },
         )
         conn.commit()
-        row = conn.execute(GET_USER, {"id": user_id}).fetchone()
+        row = conn.SELECT(User).WHERE(id=user_id).one()
         if row is None:
             raise HTTPException(status_code=404, detail="User not found")
-        return {
-            "address": {
-                "city": cast(sqlite3.Row, row)["city"],
-            }
-        }
+        return row

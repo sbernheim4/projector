@@ -1,15 +1,14 @@
-import sqlite3
-
 from fastapi import APIRouter
 from fastapi.responses import HTMLResponse
 
 from ..projects_sql import LIST_PROJECTS
 from ..sql_queries import LIST_USERS
+from ..query import TypedConnection
 
 router = APIRouter()
 
 
-def configure_ui_routes(conn: sqlite3.Connection) -> None:
+def configure_ui_routes(conn: TypedConnection) -> None:
     @router.get("/")
     def root() -> HTMLResponse:
         users = conn.execute(LIST_USERS).fetchall()
