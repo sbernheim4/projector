@@ -22,9 +22,9 @@ user_entity = build_entity(User)
 UserAPI = api(
     user_entity,
     renderer=renderer.Pydantic,
-    create=user_views.name + user_views.email + user_views.address.city + user_views.address.zip,
-    update=user_views.name + user_views.email + user_views.address.city + user_views.address.zip,
-    renameUserCity=user_views.address.city,
+    Create=user_views.name + user_views.email + user_views.address.city + user_views.address.zip,
+    Update=user_views.name + user_views.email + user_views.address.city + user_views.address.zip,
+    RenameUserCity=user_views.address.city,
 )
 
 UserCreate = UserAPI.CreateModel

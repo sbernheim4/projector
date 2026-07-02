@@ -22,10 +22,10 @@ project_entity = build_entity(Project)
 ProjectAPI = api(
     project_entity,
     renderer=renderer.Pydantic,
-    create=project_views.name + project_views.description + project_views.task.title + project_views.task.done,
-    update=project_views.name + project_views.description + project_views.task.title + project_views.task.done,
-    addTask=project_views.task.title,
-    completeTask=project_views.task.done,
+    Create=project_views.name + project_views.description + project_views.task.title + project_views.task.done,
+    Update=project_views.name + project_views.description + project_views.task.title + project_views.task.done,
+    AddTask=project_views.task.title,
+    CompleteTask=project_views.task.done,
 )
 
 ProjectCreate = ProjectAPI.CreateModel

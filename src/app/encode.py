@@ -77,13 +77,19 @@ def api(entity, renderer, **outputs):
     for output_name, projection in outputs.items():
         partial = output_name.lower() == "update"
         model_suffix = pascal_case(output_name)
+        if output_name.islower() or "_" in output_name:
+            accessor_name = output_name
+            model_attr_name = f"{output_name}_model"
+        else:
+            accessor_name = model_suffix
+            model_attr_name = f"{model_suffix}Model"
         model_cls, factory = build(
             f"{entity.name}{model_suffix}",
             projection,
             partial=partial,
         )
-        setattr(api_obj, f"{model_suffix}Model", model_cls)
-        setattr(api_obj, model_suffix, factory)
+        setattr(api_obj, model_attr_name, model_cls)
+        setattr(api_obj, accessor_name, factory)
 
     api_obj.entity = entity
     api_obj.renderer = renderer

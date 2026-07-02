@@ -60,6 +60,40 @@ def test_api_supports_named_outputs():
     assert updated.address.dob == "2000-01-01"
 
 
+def test_api_accessor_style_follows_output_name_style():
+    from dataclasses import dataclass
+
+    @dataclass(kw_only=True)
+    class User:
+        name: str
+
+    user = build_entity(User)
+    views = views_for(User)
+
+    snake_api = api(
+        user,
+        renderer=PydanticRenderer(),
+        create=views.name,
+    )
+    pascal_api = api(
+        user,
+        renderer=PydanticRenderer(),
+        Create=views.name,
+    )
+    mixed_api = api(
+        user,
+        renderer=PydanticRenderer(),
+        renameUserCity=views.name,
+    )
+
+    assert hasattr(snake_api, "create")
+    assert hasattr(snake_api, "create_model")
+    assert hasattr(pascal_api, "Create")
+    assert hasattr(pascal_api, "CreateModel")
+    assert hasattr(mixed_api, "RenameUserCity")
+    assert hasattr(mixed_api, "RenameUserCityModel")
+
+
 def test_required_wrapper_works_for_dataclass_output():
     from dataclasses import dataclass
 

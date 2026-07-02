@@ -59,10 +59,10 @@ def test_plain_annotated_classes_can_render_dataclass_models():
         update=views.name + views.address.city,
     )
 
-    created = user_api.Create(name="Sam", address={"city": "Paris"})
-    updated = user_api.Update()
+    created = user_api.create(name="Sam", address={"city": "Paris"})
+    updated = user_api.update()
 
-    assert is_dataclass(user_api.CreateModel)
+    assert is_dataclass(user_api.create_model)
     assert created.address.city == "Paris"
     assert updated.name is UNSET
     assert updated.address is UNSET
