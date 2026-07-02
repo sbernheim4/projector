@@ -67,14 +67,13 @@ def configure_project_routes(conn: TypedConnection) -> None:
 
     @router.post("/projects", response_model=ProjectCreate)
     def create_project(project: ProjectCreate):
-        payload = project.model_dump()
         cur = conn.execute(
             CREATE_PROJECT,
             {
-                "name": payload["name"],
-                "description": payload["description"],
-                "task_title": payload["task"]["title"],
-                "task_done": int(payload["task"]["done"]),
+                "name": project.name,
+                "description": project.description,
+                "task_title": project.task.title,
+                "task_done": int(project.task.done),
             },
         )
         conn.commit()
@@ -97,15 +96,14 @@ def configure_project_routes(conn: TypedConnection) -> None:
 
     @router.put("/projects/{project_id}", response_model=ProjectUpdate)
     def update_project(project_id: int, project: ProjectUpdate):
-        payload = project.model_dump()
         conn.execute(
             UPDATE_PROJECT,
             {
                 "id": project_id,
-                "name": payload["name"],
-                "description": payload["description"],
-                "task_title": payload["task"]["title"],
-                "task_done": int(payload["task"]["done"]),
+                "name": project.name,
+                "description": project.description,
+                "task_title": project.task.title,
+                "task_done": int(project.task.done),
             },
         )
         conn.commit()
