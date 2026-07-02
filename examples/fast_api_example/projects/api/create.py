@@ -1,22 +1,9 @@
-from typing import Protocol
-
 from ...query import TypedConnection
-from ..models import Project
+from ..models import Project, ProjectCreate
 from ..sql_queries import CREATE_PROJECT
 
 
-class _Task(Protocol):
-    title: str
-    done: bool
-
-
-class _ProjectCreate(Protocol):
-    name: str
-    description: str
-    task: _Task
-
-
-def create_project(conn: TypedConnection, project: _ProjectCreate):
+def create_project(conn: TypedConnection, project: ProjectCreate):
     cur = conn.execute(
         CREATE_PROJECT,
         {

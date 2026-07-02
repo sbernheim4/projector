@@ -1,22 +1,9 @@
-from typing import Protocol
-
 from ...query import TypedConnection
-from ..models import User
+from ..models import User, UserUpdate
 from ..sql_queries import UPDATE_USER
 
 
-class _Address(Protocol):
-    city: str
-    zip: str
-
-
-class _UserUpdate(Protocol):
-    name: str
-    email: str
-    address: _Address
-
-
-def update_user(conn: TypedConnection, user_id: int, user: _UserUpdate):
+def update_user(conn: TypedConnection, user_id: int, user: UserUpdate):
     conn.execute(
         UPDATE_USER,
         {

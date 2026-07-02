@@ -1,22 +1,9 @@
-from typing import Protocol
-
 from ...query import TypedConnection
-from ..models import User
+from ..models import User, UserCreate
 from ..sql_queries import CREATE_USER
 
 
-class _Address(Protocol):
-    city: str
-    zip: str
-
-
-class _UserCreate(Protocol):
-    name: str
-    email: str
-    address: _Address
-
-
-def create_user(conn: TypedConnection, user: _UserCreate):
+def create_user(conn: TypedConnection, user: UserCreate):
     cur = conn.execute(
         CREATE_USER,
         {

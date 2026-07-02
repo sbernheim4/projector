@@ -1,22 +1,9 @@
-from typing import Protocol
-
 from ...query import TypedConnection
-from ..models import Project
+from ..models import Project, ProjectUpdate
 from ..sql_queries import UPDATE_PROJECT
 
 
-class _Task(Protocol):
-    title: str
-    done: bool
-
-
-class _ProjectUpdate(Protocol):
-    name: str
-    description: str
-    task: _Task
-
-
-def update_project(conn: TypedConnection, project_id: int, project: _ProjectUpdate):
+def update_project(conn: TypedConnection, project_id: int, project: ProjectUpdate):
     conn.execute(
         UPDATE_PROJECT,
         {

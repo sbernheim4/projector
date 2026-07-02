@@ -6,34 +6,49 @@ from typing import Any, Iterable, get_args, get_origin, get_type_hints
 from .ir import Entity
 
 
-def _render_view_class(name: str, entity: Entity, indent: int = 0) -> list[str]:
-    pad = " " * indent
-    lines = [f"{pad}class {name}:"]
+def _render_model_class(name: str, entity: Entity) -> list[str]:
+    lines = [f"class {name}:"]
     if not entity.fields:
-        lines.append(f"{pad}    ...")
+        lines.append("    ...")
         return lines
 
     for field_name, field in entity.fields.items():
         if isinstance(field, Entity):
-            lines.append(f"{pad}    {field_name}: {field.name}View")
+            lines.append(f"    {field_name}: {field.name}")
         else:
-            lines.append(f"{pad}    {field_name}: Leaf[{field.type_.__name__}]")
+            lines.append(f"    {field_name}: {field.type_.__name__}")
     return lines
 
 
-def _render_model_class(name: str, entity: Entity, indent: int = 0) -> list[str]:
-    pad = " " * indent
-    lines = [f"{pad}class {name}:"]
+def _render_view_class(name: str, entity: Entity) -> list[str]:
+    lines = [f"class {name}:"]
     if not entity.fields:
-        lines.append(f"{pad}    ...")
+        lines.append("    ...")
         return lines
 
     for field_name, field in entity.fields.items():
         if isinstance(field, Entity):
-            lines.append(f"{pad}    {field_name}: {field.name}")
+            lines.append(f"    {field_name}: {field.name}View")
         else:
-            lines.append(f"{pad}    {field_name}: {field.type_.__name__}")
+            lines.append(f"    {field_name}: Leaf[{field.type_.__name__}]")
     return lines
+
+
+def _render_entity_stubs(entity: Entity, parts: list[str], emitted: set[str]) -> None:
+    if entity.name in emitted:
+        return
+    emitted.add(entity.name)
+
+    nested_entities = [field for field in entity.fields.values() if isinstance(field, Entity)]
+    for nested_entity in nested_entities:
+        _render_entity_stubs(nested_entity, parts, emitted)
+
+    parts.extend(_render_model_class(entity.name, entity))
+    parts.append("")
+    parts.extend(_render_view_class(f"{entity.name}View", entity))
+    parts.append("")
+    parts.append(f"{entity.name.lower()}_views: {entity.name}View")
+    parts.append("")
 
 
 def render_views_stub(_module_name: str, entities: Iterable[Entity]) -> str:
@@ -48,13 +63,9 @@ def render_views_stub(_module_name: str, entities: Iterable[Entity]) -> str:
         "",
     ]
 
+    emitted: set[str] = set()
     for entity in entities:
-        parts.extend(_render_model_class(entity.name, entity))
-        parts.append("")
-        parts.extend(_render_view_class(f"{entity.name}View", entity))
-        parts.append("")
-        parts.append(f"{entity.name.lower()}_views: {entity.name}View")
-        parts.append("")
+        _render_entity_stubs(entity, parts, emitted)
 
     for entity in entities:
         parts.append("@overload")
@@ -139,24 +150,13 @@ def _render_class_stub(
 def render_module_class_stubs(module_name: str) -> str:
     module = import_module(module_name)
     parts: list[str] = []
-    emitted: set[str] = set()
     has_router = hasattr(module, "router")
 
     if has_router:
         parts.append("from fastapi import APIRouter")
         parts.append("")
-
-    for name in sorted(dir(module)):
-        value = getattr(module, name)
-        if name == "router" and has_router:
-            parts.append("router: APIRouter")
-            parts.append("")
-            continue
-        if not isinstance(value, type):
-            continue
-        if not name.endswith(("Model", "Command")):
-            continue
-        _render_class_stub(name, value, emitted, parts)
+        parts.append("router: APIRouter")
+        parts.append("")
 
     return "\n".join(parts).rstrip() + "\n"
 

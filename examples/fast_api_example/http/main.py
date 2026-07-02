@@ -1,11 +1,11 @@
 import uvicorn
 
 from fastapi import FastAPI
-from .ui import router as ui_router
-from .projects import router as projects_router
-from .users import router as users_router
 
 from .. import db
+from .projects import router as projects_router
+from .ui import router as ui_router
+from .users import router as users_router
 
 
 def create_app() -> FastAPI:

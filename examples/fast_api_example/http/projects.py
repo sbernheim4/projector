@@ -1,31 +1,17 @@
 from fastapi import APIRouter, HTTPException
 
-from app import api, build_entity, renderer
-
+from ..db import conn
 from ..projects.api import add_task, complete_task, create_project, delete_project, get_project, list_projects, update_project
 from ..projects.api.common import row_to_project
-from ..projects.models import Project, project_views
-from ..db import conn
-
-router = APIRouter()
-
-project_entity = build_entity(Project)
-
-ProjectAPI = api(
-    project_entity,
-    renderer=renderer.Pydantic,
-    create=project_views.name + project_views.description + project_views.task.title + project_views.task.done,
-    read=project_views.name + project_views.description + project_views.task.title + project_views.task.done,
-    update=project_views.name + project_views.description + project_views.task.title + project_views.task.done,
-    add_task=project_views.task.title,
-    complete_task=project_views.task.done,
+from ..projects.models import (
+    Project,
+    ProjectAddTask,
+    ProjectCompleteTask,
+    ProjectCreate,
+    ProjectUpdate,
 )
 
-ProjectCreate = ProjectAPI.create_model
-ProjectRead = ProjectAPI.read_model
-ProjectUpdate = ProjectAPI.update_model
-AddTaskCommand = ProjectAPI.add_task_model
-CompleteTaskCommand = ProjectAPI.complete_task_model
+router = APIRouter()
 
 conn.register(Project, "projects", row_to_project)
 
@@ -38,12 +24,12 @@ def create(project: ProjectCreate):
     return row
 
 
-@router.get("/projects", response_model=list[ProjectRead])
+@router.get("/projects", response_model=list[Project])
 def list_all():
     return list_projects(conn)
 
 
-@router.get("/projects/{project_id}", response_model=ProjectRead)
+@router.get("/projects/{project_id}", response_model=Project)
 def get_one(project_id: int):
     row = get_project(conn, project_id)
     if row is None:
@@ -65,17 +51,17 @@ def delete(project_id: int):
     return {"deleted": True}
 
 
-@router.post("/projects/{project_id}/commands/add-task", response_model=AddTaskCommand)
-def add(project_id: int, command: AddTaskCommand):
-    row = add_task(conn, project_id, command.task.title)
+@router.post("/projects/{project_id}/commands/add-task", response_model=ProjectAddTask)
+def add(project_id: int, command: ProjectAddTask):
+    row = add_task(conn, project_id, command)
     if row is None:
         raise HTTPException(status_code=404, detail="Project not found")
     return row
 
 
-@router.post("/projects/{project_id}/commands/complete-task", response_model=CompleteTaskCommand)
-def complete(project_id: int, command: CompleteTaskCommand):
-    row = complete_task(conn, project_id)
+@router.post("/projects/{project_id}/commands/complete-task", response_model=ProjectCompleteTask)
+def complete(project_id: int, command: ProjectCompleteTask):
+    row = complete_task(conn, project_id, command)
     if row is None:
         raise HTTPException(status_code=404, detail="Project not found")
     return row
