@@ -1,6 +1,7 @@
 from typing import Any
 
 from .ir import Entity, Field, UNSET, build_entity
+from .naming import pascal_case
 from .projection import Leaf, Projection, compile_projection
 from .renderers import (
     AttrsRenderer,
@@ -75,14 +76,14 @@ def api(entity, renderer, **outputs):
 
     for output_name, projection in outputs.items():
         partial = output_name.lower() == "update"
-        model_suffix = output_name[:1].upper() + output_name[1:]
+        model_suffix = pascal_case(output_name)
         model_cls, factory = build(
             f"{entity.name}{model_suffix}",
             projection,
             partial=partial,
         )
-        setattr(api_obj, f"{output_name}_model", model_cls)
-        setattr(api_obj, output_name, factory)
+        setattr(api_obj, f"{model_suffix}Model", model_cls)
+        setattr(api_obj, model_suffix, factory)
 
     api_obj.entity = entity
     api_obj.renderer = renderer

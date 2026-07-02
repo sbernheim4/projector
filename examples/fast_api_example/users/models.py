@@ -27,7 +27,6 @@ UserAPI = api(
     renameUserCity=user_views.address.city,
 )
 
-UserCreate = UserAPI.create_model
-UserUpdate = UserAPI.update_model
-UserRenameUserCity = UserAPI.renameUserCity_model
-RenameUserCity = UserRenameUserCity
+UserCreate = UserAPI.CreateModel
+UserUpdate = UserAPI.UpdateModel
+UserRenameUserCity = UserAPI.RenameUserCityModel

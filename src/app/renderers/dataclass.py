@@ -2,6 +2,7 @@ from dataclasses import is_dataclass, make_dataclass
 from typing import Any, get_type_hints
 
 from ..ir import Field, UNSET, dataclass_update_type
+from ..naming import pascal_case
 
 
 class DataclassRenderer:
@@ -29,7 +30,7 @@ class DataclassRenderer:
                 field_type = self._build_model(
                     sub_spec.children,
                     node,
-                    f"{name}_{key}",
+                    f"{name}{pascal_case(key)}",
                     partial=partial,
                 )
 

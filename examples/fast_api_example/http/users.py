@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException
 from ..db import conn
 from ..users.api import create_user, delete_user, get_user, list_users, rename_city, update_user
 from ..users.api.common import row_to_user
-from ..users.models import RenameUserCity, User, UserCreate, UserUpdate
+from ..users.models import User, UserCreate, UserRenameUserCity, UserUpdate
 
 router = APIRouter()
 
@@ -45,8 +45,8 @@ def delete(user_id: int):
     return {"deleted": True}
 
 
-@router.post("/users/{user_id}/commands/rename-city", response_model=RenameUserCity)
-def rename(user_id: int, command: RenameUserCity):
+@router.post("/users/{user_id}/commands/rename-city", response_model=UserRenameUserCity)
+def rename(user_id: int, command: UserRenameUserCity):
     row = rename_city(conn, user_id, command)
     if row is None:
         raise HTTPException(status_code=404, detail="User not found")

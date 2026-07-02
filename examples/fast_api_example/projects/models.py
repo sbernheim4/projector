@@ -28,7 +28,7 @@ ProjectAPI = api(
     completeTask=project_views.task.done,
 )
 
-ProjectCreate = ProjectAPI.create_model
-ProjectUpdate = ProjectAPI.update_model
-ProjectAddTask = ProjectAPI.addTask_model
-ProjectCompleteTask = ProjectAPI.completeTask_model
+ProjectCreate = ProjectAPI.CreateModel
+ProjectUpdate = ProjectAPI.UpdateModel
+ProjectAddTask = ProjectAPI.AddTaskModel
+ProjectCompleteTask = ProjectAPI.CompleteTaskModel

@@ -3,6 +3,7 @@ from typing import Any, cast, get_type_hints
 import attrs
 
 from ..ir import Field
+from ..naming import pascal_case
 
 
 class AttrsRenderer:
@@ -30,7 +31,7 @@ class AttrsRenderer:
                 field_type = self._build_model(
                     sub_spec.children,
                     node,
-                    f"{name}_{key}",
+                    f"{name}{pascal_case(key)}",
                     partial=partial,
                 )
 

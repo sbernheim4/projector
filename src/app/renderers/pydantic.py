@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 
 from ..ir import Field, PydanticFieldDefs, create_pydantic_model, optional_update_type
+from ..naming import pascal_case
 
 
 class PydanticRenderer:
@@ -28,10 +29,10 @@ class PydanticRenderer:
                 nested = self._build_fields(
                     sub_spec.children,
                     node,
-                    f"{name}_{key}",
+                    f"{name}{pascal_case(key)}",
                     partial=partial,
                 )
-                nested_model = create_pydantic_model(f"{name}_{key}", nested)
+                nested_model = create_pydantic_model(f"{name}{pascal_case(key)}", nested)
                 if partial and sub_spec.required is not True:
                     fields[key] = (optional_update_type(nested_model), None)
                 elif node.nullable and sub_spec.required is not True:

@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any, TypedDict, cast
 
 from ..ir import Field
+from ..naming import pascal_case
 
 
 class TypedDictRenderer:
@@ -57,7 +58,7 @@ class TypedDictRenderer:
                     partial=partial,
                 )
                 field_type = self._make_typed_dict(
-                    f"{entity.name}_{key}", nested_annotations
+                    f"{entity.name}{pascal_case(key)}", nested_annotations
                 )
 
             if node.nullable and sub_spec.required is not True:
