@@ -50,8 +50,8 @@ def test_api_supports_named_outputs():
         UpdateBirthday=views.address.dob,
     )
 
-    assert user_api.Create_model.__name__ == "UserCreate"
-    assert user_api.UpdateBirthday_model.__name__ == "UserUpdateBirthday"
+    assert user_api.CreateModel.__name__ == "UserCreate"
+    assert user_api.UpdateBirthdayModel.__name__ == "UserUpdateBirthday"
 
     created = user_api.Create(name="Sam", address={"city": "Paris"})
     updated = user_api.UpdateBirthday(address={"dob": "2000-01-01"})
@@ -76,10 +76,10 @@ def test_required_wrapper_works_for_dataclass_output():
     user_api = api(
         user,
         renderer=DataclassRenderer(),
-        create=required(views.address.city),
+        Create=required(views.address.city),
     )
 
-    created = user_api.create(address={"city": "Paris"})
+    created = user_api.Create(address={"city": "Paris"})
     assert created.address.city == "Paris"
 
 
@@ -99,8 +99,8 @@ def test_optional_wrapper_works_for_dataclass_output():
     user_api = api(
         user,
         renderer=DataclassRenderer(),
-        create=optional(views.address.city),
+        Create=optional(views.address.city),
     )
 
-    created = user_api.create(address=None)
+    created = user_api.Create(address=None)
     assert created.address is None

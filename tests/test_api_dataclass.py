@@ -9,11 +9,11 @@ from tests.helpers import build_user_api
 def test_dataclass_renderer_generates_dataclass_operation_models():
     user_api = build_user_api(DataclassRenderer())
 
-    assert is_dataclass(user_api.create_model)
-    assert is_dataclass(user_api.read_model)
-    assert is_dataclass(user_api.update_model)
+    assert is_dataclass(user_api.CreateModel)
+    assert is_dataclass(user_api.ReadModel)
+    assert is_dataclass(user_api.UpdateModel)
 
-    created = user_api.create(
+    created = user_api.Create(
         name="Sam",
         email="sam@example.com",
         address={"city": "Paris", "zip": "75001"},
@@ -28,15 +28,15 @@ def test_dataclass_renderer_generates_dataclass_operation_models():
 def test_dataclass_update_uses_unset_sentinel():
     user_api = build_user_api(DataclassRenderer())
 
-    empty_update = user_api.update()
+    empty_update = user_api.Update()
     assert empty_update.name is UNSET
     assert empty_update.address is UNSET
 
-    explicit_null_update = user_api.update(name=None)
+    explicit_null_update = user_api.Update(name=None)
     assert explicit_null_update.name is None
     assert explicit_null_update.address is UNSET
 
-    nested_update = user_api.update(address={"city": "Paris"})
+    nested_update = user_api.Update(address={"city": "Paris"})
     assert nested_update.name is UNSET
     assert nested_update.address.city == "Paris"
     assert not hasattr(nested_update.address, "zip")
@@ -59,10 +59,10 @@ def test_plain_annotated_classes_can_render_dataclass_models():
         update=views.name + views.address.city,
     )
 
-    created = user_api.create(name="Sam", address={"city": "Paris"})
-    updated = user_api.update()
+    created = user_api.Create(name="Sam", address={"city": "Paris"})
+    updated = user_api.Update()
 
-    assert is_dataclass(user_api.create_model)
+    assert is_dataclass(user_api.CreateModel)
     assert created.address.city == "Paris"
     assert updated.name is UNSET
     assert updated.address is UNSET
@@ -91,7 +91,7 @@ def test_typed_dict_models_can_render_dataclass_operation_models():
     created = user_api.Create(name="Sam", address={"city": "Paris"})
     updated = user_api.Update()
 
-    assert is_dataclass(user_api.Create_model)
+    assert is_dataclass(user_api.CreateModel)
     assert created.address.city == "Paris"
     assert updated.name is UNSET
     assert updated.address is UNSET
@@ -122,7 +122,7 @@ def test_attrs_models_can_render_dataclass_operation_models():
     created = user_api.Create(name="Sam", address={"city": "Paris"})
     updated = user_api.Update()
 
-    assert is_dataclass(user_api.Create_model)
+    assert is_dataclass(user_api.CreateModel)
     assert created.address.city == "Paris"
     assert updated.name is UNSET
     assert updated.address is UNSET
@@ -144,10 +144,10 @@ def test_required_wrapper_works_for_dataclass_output():
     user_api = api(
         user,
         renderer=DataclassRenderer(),
-        create=required(views.address.city),
+        Create=required(views.address.city),
     )
 
-    created = user_api.create(address={"city": "Paris"})
+    created = user_api.Create(address={"city": "Paris"})
     assert created.address.city == "Paris"
 
 
@@ -167,10 +167,10 @@ def test_optional_wrapper_works_for_dataclass_output():
     user_api = api(
         user,
         renderer=DataclassRenderer(),
-        create=optional(views.address.city),
+        Create=optional(views.address.city),
     )
 
-    created = user_api.create(address=None)
+    created = user_api.Create(address=None)
     assert created.address is None
 
 
@@ -190,10 +190,10 @@ def test_nullable_subtree_remains_optional_for_dataclass_output():
     user_api = api(
         user,
         renderer=DataclassRenderer(),
-        create=views.address.city,
+        Create=views.address.city,
     )
 
-    created = user_api.create(address=None)
+    created = user_api.Create(address=None)
     assert created.address is None
 
 
@@ -214,9 +214,9 @@ def test_optional_projections_can_be_composed_for_dataclass_output():
     user_api = api(
         user,
         renderer=DataclassRenderer(),
-        create=optional(views.name) + optional(views.address.city),
+        Create=optional(views.name) + optional(views.address.city),
     )
 
-    created = user_api.create(name="Sam", address=None)
+    created = user_api.Create(name="Sam", address=None)
     assert created.name == "Sam"
     assert created.address is None

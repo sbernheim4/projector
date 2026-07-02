@@ -22,7 +22,7 @@ def build_user_api(renderer):
     return api(
         user,
         renderer=renderer,
-        create=views.name + views.email + views.address.city + views.address.zip,
-        read=views.name + views.address.city,
-        update=views.name + views.address.city,
+        Create=views.name + views.email + views.address.city + views.address.zip,
+        Read=views.name + views.address.city,
+        Update=views.name + views.address.city,
     )

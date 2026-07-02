@@ -48,7 +48,7 @@ def test_attrs_models_can_render_attrs_operation_models():
     created = user_api.Create(name="Sam", address={"city": "Paris"})
     updated = user_api.Update(name="Sam")
 
-    assert attrs.has(user_api.Create_model)
+    assert attrs.has(user_api.CreateModel)
     assert created.address.city == "Paris"
     assert updated.name == "Sam"
     assert updated.address is None
@@ -70,10 +70,10 @@ def test_required_wrapper_works_for_attrs_output():
     user_api = api(
         user,
         renderer=AttrsRenderer(),
-        create=required(views.address.city),
+        Create=required(views.address.city),
     )
 
-    created = user_api.create(address={"city": "Paris"})
+    created = user_api.Create(address={"city": "Paris"})
     assert created.address.city == "Paris"
 
 
@@ -93,10 +93,10 @@ def test_optional_wrapper_works_for_attrs_output():
     user_api = api(
         user,
         renderer=AttrsRenderer(),
-        create=optional(views.address.city),
+        Create=optional(views.address.city),
     )
 
-    created = user_api.create(address=None)
+    created = user_api.Create(address=None)
     assert created.address is None
 
 
@@ -116,10 +116,10 @@ def test_nullable_subtree_remains_optional_for_attrs_output():
     user_api = api(
         user,
         renderer=AttrsRenderer(),
-        create=views.address.city,
+        Create=views.address.city,
     )
 
-    created = user_api.create(address=None)
+    created = user_api.Create(address=None)
     assert created.address is None
 
 
@@ -140,9 +140,9 @@ def test_optional_projections_can_be_composed_for_attrs_output():
     user_api = api(
         user,
         renderer=AttrsRenderer(),
-        create=optional(views.name) + optional(views.address.city),
+        Create=optional(views.name) + optional(views.address.city),
     )
 
-    created = user_api.create(name="Sam", address=None)
+    created = user_api.Create(name="Sam", address=None)
     assert created.name == "Sam"
     assert created.address is None
