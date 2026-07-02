@@ -34,9 +34,9 @@ views = views_for(User)
 UserAPI = api(
     user,
     renderer=renderer.Pydantic,
-    create=required(views.name) + optional(views.address.city + views.address.zip),
-    read=optional(views.name) + optional(views.address.city),
-    update=views.name,
+    Create=required(views.name) + optional(views.address.city + views.address.zip),
+    Read=optional(views.name) + optional(views.address.city),
+    Update=views.name,
 )
 
 
@@ -44,7 +44,7 @@ UserAPI = api(
 conn = sqlite3.connect(":memory:")
 conn.execute("create table users (name text, city text, zip text)")
 
-def add_user_to_db(user: UserAPI.create_model) -> None:
+def add_user_to_db(user: UserAPI.CreateModel) -> None:
     conn.execute(
         "insert into users (name, city, zip) values (?, ?, ?)",
         (user.name, user.address.city, user.address.zip),
@@ -52,13 +52,13 @@ def add_user_to_db(user: UserAPI.create_model) -> None:
     conn.commit()
 
 
-new_user = UserAPI.create(name="Sam", address={"city": "Paris", "zip": "75001"})
+new_user = UserAPI.Create(name="Sam", address={"city": "Paris", "zip": "75001"})
 add_user_to_db(new_user)
 ```
 
 ## More Info
 
-`create`, `read`, and `update` are just example names. Use whatever output names
+`Create`, `Read`, and `Update` are just example names. Use whatever output names
 fit your application.
 
 For example:
@@ -67,23 +67,23 @@ For example:
 UserAPI = api(
     user,
     renderer=renderer.Pydantic,
-    create_user_command=views.name + views.address.city + views.address.zip,
-    read=views.name + views.address.city,
-    update_name_command=views.name,
+    CreateUserCommand=views.name + views.address.city + views.address.zip,
+    Read=views.name + views.address.city,
+    UpdateNameCommand=views.name,
 )
 ```
 
 That gives you:
 
-- `UserAPI.create_user_command_model`
-- `UserAPI.read_model`
-- `UserAPI.update_name_command_model`
+- `UserAPI.CreateUserCommandModel`
+- `UserAPI.ReadModel`
+- `UserAPI.UpdateNameCommandModel`
 
 And factories that instantiate those models:
 
-- `UserAPI.create_user_command(...)`
-- `UserAPI.read(...)`
-- `UserAPI.update_name_command(...)`
+- `UserAPI.CreateUserCommand(...)`
+- `UserAPI.Read(...)`
+- `UserAPI.UpdateNameCommand(...)`
 
 If a source model field can be `None`, you can still decide whether a specific
 output must require it or keep it optional:
@@ -92,8 +92,8 @@ output must require it or keep it optional:
 UserAPI = api(
     user,
     renderer=renderer.Pydantic,
-    create=required(views.address.city),
-    read=optional(views.address.city),
+    Create=required(views.address.city),
+    Read=optional(views.address.city),
 )
 ```
 
