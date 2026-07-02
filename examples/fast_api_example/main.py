@@ -3,6 +3,7 @@ import uvicorn
 from fastapi import FastAPI
 
 from . import db
+from .api.projects import configure_project_routes, router as project_router
 from .api.ui import configure_ui_routes, router as ui_router
 from .api.users import configure_user_routes, router as user_router
 
@@ -13,9 +14,11 @@ def create_app() -> FastAPI:
     db.init_db(conn)
 
     configure_ui_routes(conn)
+    configure_project_routes(conn)
     configure_user_routes(conn)
 
     app.include_router(ui_router)
+    app.include_router(project_router)
     app.include_router(user_router)
     return app
 

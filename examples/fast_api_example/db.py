@@ -21,6 +21,17 @@ def init_db(conn: sqlite3.Connection) -> None:
         )
         """,
     )
+    conn.execute(
+        """
+        create table if not exists projects (
+            id integer primary key autoincrement,
+            name text not null,
+            description text not null,
+            task_title text not null,
+            task_done integer not null default 0
+        )
+        """,
+    )
     conn.commit()
 
 
