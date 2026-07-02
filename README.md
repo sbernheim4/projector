@@ -1,9 +1,10 @@
 # Projector
 
-Derive fully typed, operation-specific, python models from existing domain models; declaratively specify the properties you want and eliminate model explosion.
+Eliminate model explosion by deriving fully typed, operation-specific Python models from existing domain models by declaratively specifying the properties you want.
 
-Domain models (IE input) can be written using dataclasses, Pydantic models, TypedDict classes, attrs classes, and plain annotated classes.
-Output can be in any of: Pydantic models, dataclass models, attrs classes, or TypedDict classes
+Domain models (input) can be written using: dataclasses, Pydantic models, TypedDict classes, attrs classes, and plain annotated classes.
+
+Output can be: Pydantic models, dataclass models, attrs classes, or TypedDict classes.
 
 
 ## Example
@@ -40,7 +41,8 @@ UserAPI = api(
 )
 
 
-# Use the derived user models:
+# Use the derived user models. Types have `Model` (or `_model` if using
+# snake_case) appended to the end of the keyword argument:
 conn = sqlite3.connect(":memory:")
 conn.execute("create table users (name text, city text, zip text)")
 
@@ -52,14 +54,15 @@ def add_user_to_db(user: UserAPI.CreateModel) -> None:
     conn.commit()
 
 
-new_user = UserAPI.Create(name="Sam", address={"city": "Paris", "zip": "75001"})
+# Create an instance with the exact keyword argument provided
+new_user = UserAPI.Create(name="John", address={"city": "Paris", "zip": "75001"})
 add_user_to_db(new_user)
 ```
 
 ## More Info
 
-`Create`, `Read`, and `Update` are just example names. Use whatever output names
-fit your application.
+`Create`, `Read`, and `Update` aboe are arbitrary. Use whatever names fit your
+application.
 
 For example:
 
@@ -100,6 +103,14 @@ UserAPI = api(
 `required(...)` applies to the whole selected subtree. `optional(...)` keeps
 that subtree nullable in the generated output.
 
+Snake_case output names are still supported too. If you use `create` or
+`create_user_command`, the generated accessors stay snake_case:
+
+- `UserAPI.create`
+- `UserAPI.create_model`
+- `UserAPI.create_user_command`
+- `UserAPI.create_user_command_model`
+
 ## Supported input and output types
 
 Input:
@@ -135,31 +146,32 @@ builds the classes.
 - lets you name each generated model however you want
 - supports partial update semantics with unset-vs-`None`
 - provides factory functions for the generated classes
-- can generate `.pyi` stubs for consumer model modules
+- can generate `.pyi` stubs for consumer modules and HTTP routers
 
 ## Example Layout
 
 The `examples/` directory is a fully isolated consumer example.
 
 ```text
-examples/models.py    Demo domain models
-examples/models.pyi   Generated stub for the demo models
-examples/example.py   Runnable end-to-end example
+examples/demo_example/               Demo domain models and runnable example
+examples/fast_api_example/users/     User domain package
+examples/fast_api_example/projects/  Project domain package
+examples/fast_api_example/http/      FastAPI transport layer
 ```
 
-Run it:
+Run the demo example:
 
 ```bash
-PYTHONPATH=src uv run python -m examples.example
+PYTHONPATH=src uv run python -m examples.demo_example.main
 ```
 
-Regenerate the stub:
+Run the FastAPI example:
 
 ```bash
-PYTHONPATH=src uv run python -m examples.example --generate-stub
+PYTHONPATH=src .venv/bin/python -m examples.fast_api_example.http.main
 ```
 
-Or use the repo helpers:
+Helpful `just` commands
 
 ```bash
 just example
