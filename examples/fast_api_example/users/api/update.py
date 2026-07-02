@@ -2,7 +2,7 @@ from typing import Protocol
 
 from ...query import TypedConnection
 from ..models import User
-from ..sql_queries import CREATE_USER
+from ..sql_queries import UPDATE_USER
 
 
 class _Address(Protocol):
@@ -10,16 +10,17 @@ class _Address(Protocol):
     zip: str
 
 
-class _UserCreate(Protocol):
+class _UserUpdate(Protocol):
     name: str
     email: str
     address: _Address
 
 
-def create_user(conn: TypedConnection, user: _UserCreate):
-    cur = conn.execute(
-        CREATE_USER,
+def update_user(conn: TypedConnection, user_id: int, user: _UserUpdate):
+    conn.execute(
+        UPDATE_USER,
         {
+            "id": user_id,
             "name": user.name,
             "email": user.email,
             "city": user.address.city,
@@ -27,4 +28,4 @@ def create_user(conn: TypedConnection, user: _UserCreate):
         },
     )
     conn.commit()
-    return conn.SELECT(User).WHERE(id=cur.lastrowid).one()
+    return conn.SELECT(User).WHERE(id=user_id).one()

@@ -1,19 +1,18 @@
 from fastapi import APIRouter
 from fastapi.responses import HTMLResponse
 
-from ..projects_sql import LIST_PROJECTS
-from ..sql_queries import LIST_USERS
-from ..query import TypedConnection
+from ..projects.sql_queries import LIST_PROJECTS
+from ..users.sql_queries import LIST_USERS
+from ..db import conn
 
 router = APIRouter()
 
 
-def configure_ui_routes(conn: TypedConnection) -> None:
-    @router.get("/")
-    def root() -> HTMLResponse:
-        users = conn.execute(LIST_USERS).fetchall()
-        projects = conn.execute(LIST_PROJECTS).fetchall()
-        html = """
+@router.get("/")
+def root() -> HTMLResponse:
+    users = conn.execute(LIST_USERS).fetchall()
+    projects = conn.execute(LIST_PROJECTS).fetchall()
+    html = """
         <!doctype html>
         <html>
           <head>
@@ -151,24 +150,24 @@ def configure_ui_routes(conn: TypedConnection) -> None:
             </script>
           </body>
         </html>
-        """
-        html = html.replace(
-            "__ROWS__",
-            "".join(
-                f"""<li>
-                  <button type="button" class="load-user" data-user-id="{row['id']}">#{row['id']}: {row['name']} ({row['email']}) - {row['city']}, {row['zip']}</button>
-                  <button type="button" class="delete-user" data-user-id="{row['id']}">Delete</button>
-                </li>"""
-                for row in users
-            ),
-        )
-        html = html.replace(
-            "__PROJECT_ROWS__",
-            "".join(
-                f"""<li>
-                  <button type="button" class="load-project" data-project-id="{row['id']}">#{row['id']}: {row['name']} - {row['description']} ({row['task_title']}, done={row['task_done']})</button>
-                </li>"""
-                for row in projects
-            ),
-        )
-        return HTMLResponse(html)
+    """
+    html = html.replace(
+        "__ROWS__",
+        "".join(
+            f"""<li>
+              <button type="button" class="load-user" data-user-id="{row['id']}">#{row['id']}: {row['name']} ({row['email']}) - {row['city']}, {row['zip']}</button>
+              <button type="button" class="delete-user" data-user-id="{row['id']}">Delete</button>
+            </li>"""
+            for row in users
+        ),
+    )
+    html = html.replace(
+        "__PROJECT_ROWS__",
+        "".join(
+            f"""<li>
+              <button type="button" class="load-project" data-project-id="{row['id']}">#{row['id']}: {row['name']} - {row['description']} ({row['task_title']}, done={row['task_done']})</button>
+            </li>"""
+            for row in projects
+        ),
+    )
+    return HTMLResponse(html)

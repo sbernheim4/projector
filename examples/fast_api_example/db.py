@@ -11,6 +11,9 @@ def connect() -> TypedConnection:
     return TypedConnection(conn)
 
 
+conn = connect()
+
+
 def init_db(conn: TypedConnection) -> None:
     conn.execute(
         """
