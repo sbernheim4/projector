@@ -140,9 +140,18 @@ def render_module_class_stubs(module_name: str) -> str:
     module = import_module(module_name)
     parts: list[str] = []
     emitted: set[str] = set()
+    has_router = hasattr(module, "router")
+
+    if has_router:
+        parts.append("from fastapi import APIRouter")
+        parts.append("")
 
     for name in sorted(dir(module)):
         value = getattr(module, name)
+        if name == "router" and has_router:
+            parts.append("router: APIRouter")
+            parts.append("")
+            continue
         if not isinstance(value, type):
             continue
         if not name.endswith(("Model", "Command")):

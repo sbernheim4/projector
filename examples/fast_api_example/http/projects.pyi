@@ -1,3 +1,5 @@
+from fastapi import APIRouter
+
 class AddTaskCommand:
     task: "ProjectAdd_task_task"
 
@@ -9,3 +11,5 @@ class CompleteTaskCommand:
 
 class ProjectComplete_task_task:
     done: bool
+
+router: APIRouter
