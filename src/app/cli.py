@@ -23,10 +23,6 @@ def generate_stubs(module_name: str) -> None:
     generate_views_pyi(module_name, entities)
 
 
-def generate_module_stubs(module_name: str) -> None:
-    write_module_class_stubs(module_name)
-
-
 def main(argv: list[str] | None = None) -> None:
     parser = ArgumentParser(prog="projector")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -45,7 +41,7 @@ def main(argv: list[str] | None = None) -> None:
     if args.command == "stubs":
         generate_stubs(args.module)
     elif args.command == "module-stubs":
-        generate_module_stubs(args.module)
+        write_module_class_stubs(args.module)
 
 
 if __name__ == "__main__":
