@@ -3,6 +3,11 @@ set shell := ["bash", "-lc"]
 test:
 	.venv/bin/pytest -q
 
+check:
+	ruff check .
+	ty check .
+	pyrefly check .
+
 stubs:
 	PYTHONPATH=src:. .venv/bin/projector type-stubs examples/demo_example/models.py examples/fast_api_example/projects/models.py examples/fast_api_example/users/models.py
 
@@ -12,7 +17,3 @@ demo-example:
 fast-api-example:
 	PYTHONPATH=src .venv/bin/python -m examples.fast_api_example.http.main
 
-check:
-	ruff check .
-	ty check .
-	pyrefly check .

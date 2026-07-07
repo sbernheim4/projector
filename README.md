@@ -81,7 +81,7 @@ That gives you:
 - `UserModels.ReadModel`
 - `UserModels.UpdateNameCommandModel`
 
-And factories that instantiate those models:
+And functions to instantiate instances:
 
 - `UserModels.CreateUserCommand(...)`
 - `UserModels.Read(...)`
@@ -125,15 +125,6 @@ Output:
 - attrs classes
 - `TypedDict` classes
 
-The flow is:
-
-```text
-user models (dataclasses, pydantic, attrs, typed dicts, plain classes) -> entity/projection IR -> generated output models (pydantic, dataclasses, attrs, typed dicts)
-```
-
-Declaratively specify which fields belong in each output model. `Projector`
-builds the classes.
-
 ## What It Does
 
 - reads user-land model classes into a schema IR
@@ -147,6 +138,23 @@ builds the classes.
 - provides factory functions for the generated classes
 - can generate `.pyi` stubs for consumer model modules so type checkers can
   understand dynamic `views_for(...)` attributes
+
+## Core Concepts
+
+`project(...)` is the main runtime entry point. It takes a source model class,
+selected fields, and a renderer, then returns a namespace containing generated
+model classes and factory functions.
+
+`views_for(...)` creates typed selectors for a source model. Use these selectors
+to describe which fields belong in each generated output model.
+
+`projector type-stubs` is the type-checker build step. It writes sibling `.pyi`
+files so LSPs and type checkers can understand dynamic `views_for(...)`
+attributes. These files are not executed at runtime.
+
+`build_entity(...)` is the lower-level IR helper. Normal users should not need
+it for `project(...)`, but it remains public for debugging, tests, and tooling
+that wants to inspect the derived schema.
 
 ## Type Checking Build Step
 
@@ -183,10 +191,8 @@ than dynamic runtime models plus type checker stubs.
 The `examples/` directory is a fully isolated consumer example.
 
 ```text
-examples/demo_example/               Demo domain models and runnable example
-examples/fast_api_example/users/     User domain package
-examples/fast_api_example/projects/  Project domain package
-examples/fast_api_example/http/      FastAPI transport layer
+examples/demo_example/        Demo domain models and runnable example
+examples/fast_api_example/    An example with an FastAPI HTTP server with CRUD and command style generated models
 ```
 
 Run the demo example:
@@ -204,11 +210,11 @@ PYTHONPATH=src .venv/bin/python -m examples.fast_api_example.http.main
 Helpful `just` commands
 
 ```bash
-just demo-example
-just fast-project-example
-just stubs
 just test
 just check
+just stubs
+just demo-example
+just fast-api-example
 ```
 
 ## Library Structure
