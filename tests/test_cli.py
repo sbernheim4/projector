@@ -6,7 +6,7 @@ from pathlib import Path
 from app.cli import main
 
 
-def test_stubs_command_accepts_python_file_path(tmp_path: Path):
+def test_type_stubs_command_accepts_python_file_path(tmp_path: Path):
     package = tmp_path / "sample"
     package.mkdir()
     (package / "__init__.py").write_text("", encoding="utf-8")
@@ -32,7 +32,7 @@ def test_stubs_command_accepts_python_file_path(tmp_path: Path):
         encoding="utf-8",
     )
 
-    main(["stubs", str(module_path)])
+    main(["type-stubs", str(module_path)])
 
     stub = module_path.with_suffix(".pyi")
     assert stub.exists()
@@ -42,7 +42,7 @@ def test_stubs_command_accepts_python_file_path(tmp_path: Path):
     assert "address: AddressView" in contents
 
 
-def test_stubs_command_accepts_multiple_python_file_paths(tmp_path: Path):
+def test_type_stubs_command_accepts_multiple_python_file_paths(tmp_path: Path):
     first_package = tmp_path / "first"
     first_package.mkdir()
     (first_package / "__init__.py").write_text("", encoding="utf-8")
@@ -79,7 +79,7 @@ def test_stubs_command_accepts_multiple_python_file_paths(tmp_path: Path):
         encoding="utf-8",
     )
 
-    main(["stubs", str(first_module), str(second_module)])
+    main(["type-stubs", str(first_module), str(second_module)])
 
     assert "class UserView:" in first_module.with_suffix(".pyi").read_text(
         encoding="utf-8"

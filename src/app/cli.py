@@ -78,8 +78,11 @@ def main(argv: list[str] | None = None) -> None:
     parser = ArgumentParser(prog="projector")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    stubs = subparsers.add_parser("stubs", help="Generate .pyi view stubs")
-    stubs.add_argument(
+    type_stubs = subparsers.add_parser(
+        "type-stubs",
+        help="Generate .pyi files for type checkers",
+    )
+    type_stubs.add_argument(
         "modules",
         nargs="+",
         help="Python file paths containing domain models",
@@ -87,7 +90,7 @@ def main(argv: list[str] | None = None) -> None:
 
     args = parser.parse_args(argv)
 
-    if args.command == "stubs":
+    if args.command == "type-stubs":
         generate_stubs_for_paths(args.modules)
 
 

@@ -158,7 +158,7 @@ the dynamic view objects returned by `views_for(...)`.
 Generate those type checker stubs with the CLI:
 
 ```bash
-PYTHONPATH=src:. projector stubs examples/demo_example/models.py examples/fast_api_example/projects/models.py
+PYTHONPATH=src:. projector type-stubs examples/demo_example/models.py examples/fast_api_example/projects/models.py
 ```
 
 The command accepts one or more Python file paths and writes sibling `.pyi`
@@ -178,10 +178,6 @@ This `.pyi` build step is the current recommended typed workflow. Generating
 full `.py` modules for derived models is intentionally deferred for now; it is
 only worth adding if users need importable generated source artifacts rather
 than dynamic runtime models plus type checker stubs.
-
-Naming note: `projector stubs` is the current command name, but a clearer future
-name would be `projector type-stubs` because the generated files exist only for
-type checkers.
 
 ## Example Layout
 
