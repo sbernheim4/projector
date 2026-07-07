@@ -13,7 +13,7 @@ Output can be: Pydantic models, dataclass models, attrs classes, or TypedDict cl
 import sqlite3
 from dataclasses import dataclass
 
-from app import api, build_entity, renderer, views_for
+from app import api, build_entity, optional, renderer, required, views_for
 
 
 # Application specific domain models:
@@ -61,7 +61,7 @@ add_user_to_db(new_user)
 
 ## More Info
 
-`Create`, `Read`, and `Update` aboe are arbitrary. Use whatever names fit your
+`Create`, `Read`, and `Update` above are arbitrary. Use whatever names fit your
 application.
 
 For example:
@@ -146,7 +146,42 @@ builds the classes.
 - lets you name each generated model however you want
 - supports partial update semantics with unset-vs-`None`
 - provides factory functions for the generated classes
-- can generate `.pyi` stubs for consumer model modules
+- can generate `.pyi` stubs for consumer model modules so type checkers can
+  understand dynamic `views_for(...)` attributes
+
+## Type Checking Build Step
+
+Projector currently derives models dynamically at runtime. Runtime use does not
+require generated files, but static type checkers need `.pyi` files to understand
+the dynamic view objects returned by `views_for(...)`.
+
+Generate those type checker stubs with the CLI:
+
+```bash
+PYTHONPATH=src:. projector stubs examples/demo_example/models.py examples/fast_api_example/projects/models.py
+```
+
+The command accepts one or more Python file paths and writes sibling `.pyi`
+files:
+
+```text
+examples/demo_example/models.py -> examples/demo_example/models.pyi
+```
+
+The repo helper command regenerates all example model stubs:
+
+```bash
+just stubs
+```
+
+This `.pyi` build step is the current recommended typed workflow. Generating
+full `.py` modules for derived models is intentionally deferred for now; it is
+only worth adding if users need importable generated source artifacts rather
+than dynamic runtime models plus type checker stubs.
+
+Naming note: `projector stubs` is the current command name, but a clearer future
+name would be `projector type-stubs` because the generated files exist only for
+type checkers.
 
 ## Example Layout
 
@@ -174,7 +209,8 @@ PYTHONPATH=src .venv/bin/python -m examples.fast_api_example.http.main
 Helpful `just` commands
 
 ```bash
-just example
+just demo-example
+just fast-api-example
 just stubs
 just test
 just check
@@ -235,4 +271,4 @@ Stub generation helpers.
 - generated `TypedDict` output models
 - partial updates with unset-vs-`None`
 - generated factories
-- consumer-owned stub generation
+- consumer-owned `.pyi` stub generation for type checkers
