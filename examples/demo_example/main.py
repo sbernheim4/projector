@@ -25,47 +25,44 @@ def run_example() -> None:
     Address = models_module.Address
     User = models_module.User
 
-    # Step 1: build the schema IR from the user's domain models.
-    user = build_entity(User)
-
-    # Step 2: build typed field selectors for declarative projections.
+    # Step 1: build typed field selectors for declarative projections.
     views = views_for(User)
 
-    # Step 3: generate Pydantic models for create/read/update operations.
+    # Step 2: generate Pydantic models for create/read/update operations.
     user_api = api(
-        user,
+        User,
         renderer=renderer.Pydantic,
         read=views.name + views.address.city,
         update=views.name,
         create=views.name + views.address.city + views.address.zip,
     )
 
-    # Step 4: instantiate the generated Pydantic models through the factories.
+    # Step 3: instantiate the generated Pydantic models through the factories.
     instance = user_api.create(name="Sam", address={"city": "Paris", "zip": "75001"})
     update = user_api.update(name=None)
 
-    # Step 5: generate dataclass models for the same projections.
+    # Step 4: generate dataclass models for the same projections.
     dataclass_user_api = api(
-        user,
+        User,
         renderer=renderer.Dataclass,
         read=views.name + views.address.city,
         update=views.name + views.address.city,
         create=views.name + views.address.city + views.address.zip,
     )
 
-    # Step 6: show the dataclass update factory preserving unset-vs-None semantics.
+    # Step 5: show the dataclass update factory preserving unset-vs-None semantics.
     dataclass_update = dataclass_user_api.update(address={"city": "Paris"})
 
-    # Step 7: generate attrs models for the same projections.
+    # Step 6: generate attrs models for the same projections.
     attrs_user_api = api(
-        user,
+        User,
         renderer=renderer.Attrs,
         read=views.name + views.address.city,
         update=views.name + views.address.city,
         create=views.name + views.address.city + views.address.zip,
     )
 
-    # Step 8: instantiate the generated attrs models through the factories.
+    # Step 7: instantiate the generated attrs models through the factories.
     attrs_create = attrs_user_api.create(
         name="Sam",
         address={"city": "Paris", "zip": "75001"},
@@ -80,12 +77,11 @@ def run_example() -> None:
         name: str
         address: TypedAddress
 
-    typed_user = build_entity(TypedUser)
     typed_views = views_for(TypedUser)
 
-    # Step 9: generate TypedDict models and use the returned dict values directly.
+    # Step 8: generate TypedDict models and use the returned dict values directly.
     typed_user_api = api(
-        typed_user,
+        TypedUser,
         renderer=renderer.TypedDict,
         create=typed_views.name + typed_views.address.city + typed_views.address.zip,
         read=typed_views.name + typed_views.address.city,
@@ -100,17 +96,16 @@ def run_example() -> None:
     class NullableUser:
         address: Address | None
 
-    nullable_user = build_entity(NullableUser)
     nullable_views = views_for(NullableUser)
 
-    # Step 10: show required/optional selectors on a nullable subtree.
+    # Step 9: show required/optional selectors on a nullable subtree.
     required_user_api = api(
-        nullable_user,
+        NullableUser,
         renderer=renderer.Pydantic,
         create=required(nullable_views.address.city),
     )
     optional_user_api = api(
-        nullable_user,
+        NullableUser,
         renderer=renderer.Pydantic,
         create=optional(nullable_views.address.city),
     )
@@ -155,7 +150,7 @@ def run_example() -> None:
     print("  optional instance:", optional_address)
 
     nullable_api = api(
-        nullable_user,
+        NullableUser,
         renderer=renderer.Pydantic,
         create=optional(nullable_views.address.city),
     )

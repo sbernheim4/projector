@@ -1,7 +1,7 @@
 from dataclasses import is_dataclass
 
 from app import optional, required, views_for
-from app.encode import DataclassRenderer, UNSET, api, build_entity
+from app.encode import DataclassRenderer, UNSET, api
 
 from tests.helpers import build_user_api
 
@@ -50,10 +50,9 @@ def test_plain_annotated_classes_can_render_dataclass_models():
         name: str
         address: Address
 
-    user = build_entity(User)
     views = views_for(User)
     user_api = api(
-        user,
+        User,
         renderer=DataclassRenderer(),
         create=views.name + views.address.city,
         update=views.name + views.address.city,
@@ -79,10 +78,9 @@ def test_typed_dict_models_can_render_dataclass_operation_models():
         name: str
         address: Address
 
-    user = build_entity(User)
     views = views_for(User)
     user_api = api(
-        user,
+        User,
         renderer=DataclassRenderer(),
         Create=views.name + views.address.city,
         Update=views.name + views.address.city,
@@ -110,10 +108,9 @@ def test_attrs_models_can_render_dataclass_operation_models():
         name: str
         address: Address
 
-    user = build_entity(User)
     views = views_for(User)
     user_api = api(
-        user,
+        User,
         renderer=DataclassRenderer(),
         Create=views.name + views.address.city,
         Update=views.name + views.address.city,
@@ -139,10 +136,9 @@ def test_required_wrapper_works_for_dataclass_output():
     class User:
         address: Address | None
 
-    user = build_entity(User)
     views = views_for(User)
     user_api = api(
-        user,
+        User,
         renderer=DataclassRenderer(),
         Create=required(views.address.city),
     )
@@ -162,10 +158,9 @@ def test_optional_wrapper_works_for_dataclass_output():
     class User:
         address: Address | None
 
-    user = build_entity(User)
     views = views_for(User)
     user_api = api(
-        user,
+        User,
         renderer=DataclassRenderer(),
         Create=optional(views.address.city),
     )
@@ -185,10 +180,9 @@ def test_nullable_subtree_remains_optional_for_dataclass_output():
     class User:
         address: Address | None
 
-    user = build_entity(User)
     views = views_for(User)
     user_api = api(
-        user,
+        User,
         renderer=DataclassRenderer(),
         Create=views.address.city,
     )
@@ -209,10 +203,9 @@ def test_optional_projections_can_be_composed_for_dataclass_output():
         name: str
         address: Address | None
 
-    user = build_entity(User)
     views = views_for(User)
     user_api = api(
-        user,
+        User,
         renderer=DataclassRenderer(),
         Create=optional(views.name) + optional(views.address.city),
     )

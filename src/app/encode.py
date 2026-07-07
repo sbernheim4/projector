@@ -61,7 +61,11 @@ class EntityAPI:
         raise AttributeError(name)
 
 
-def api(entity, renderer, **outputs):
+def api(model_cls, renderer, **outputs):
+    if isinstance(model_cls, Entity):
+        raise TypeError("api() accepts a model class; pass User, not build_entity(User)")
+
+    entity = build_entity(model_cls)
     api_obj = EntityAPI()
 
     def build(name, projection, partial: bool = False):

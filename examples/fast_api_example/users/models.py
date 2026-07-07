@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from app import api, build_entity, renderer, views_for
+from app import api, renderer, views_for
 
 
 @dataclass(kw_only=True)
@@ -18,9 +18,8 @@ class User:
 
 user_views = views_for(User)
 
-user_entity = build_entity(User)
 UserAPI = api(
-    user_entity,
+    User,
     renderer=renderer.Pydantic,
     Create=user_views.name + user_views.email + user_views.address.city + user_views.address.zip,
     Update=user_views.name + user_views.email + user_views.address.city + user_views.address.zip,

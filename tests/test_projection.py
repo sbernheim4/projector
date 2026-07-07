@@ -27,6 +27,24 @@ def test_compile_projection_rejects_unknown_input():
         compile_projection(object())
 
 
+def test_api_rejects_prebuilt_entities():
+    from dataclasses import dataclass
+
+    @dataclass(kw_only=True)
+    class User:
+        name: str
+
+    entity = build_entity(User)
+    views = views_for(User)
+
+    with pytest.raises(TypeError, match="pass User, not build_entity"):
+        api(
+            entity,
+            renderer=PydanticRenderer(),
+            Create=views.name,
+        )
+
+
 def test_api_supports_named_outputs():
     from dataclasses import dataclass
 
@@ -40,11 +58,10 @@ def test_api_supports_named_outputs():
         name: str
         address: Address
 
-    user = build_entity(User)
     views = views_for(User)
 
     user_api = api(
-        user,
+        User,
         renderer=PydanticRenderer(),
         Create=views.name + views.address.city,
         UpdateBirthday=views.address.dob,
@@ -67,21 +84,20 @@ def test_api_accessor_style_follows_output_name_style():
     class User:
         name: str
 
-    user = build_entity(User)
     views = views_for(User)
 
     snake_api = api(
-        user,
+        User,
         renderer=PydanticRenderer(),
         create=views.name,
     )
     pascal_api = api(
-        user,
+        User,
         renderer=PydanticRenderer(),
         Create=views.name,
     )
     mixed_api = api(
-        user,
+        User,
         renderer=PydanticRenderer(),
         renameUserCity=views.name,
     )
@@ -105,10 +121,9 @@ def test_required_wrapper_works_for_dataclass_output():
     class User:
         address: Address | None
 
-    user = build_entity(User)
     views = views_for(User)
     user_api = api(
-        user,
+        User,
         renderer=DataclassRenderer(),
         Create=required(views.address.city),
     )
@@ -128,10 +143,9 @@ def test_optional_wrapper_works_for_dataclass_output():
     class User:
         address: Address | None
 
-    user = build_entity(User)
     views = views_for(User)
     user_api = api(
-        user,
+        User,
         renderer=DataclassRenderer(),
         Create=optional(views.address.city),
     )

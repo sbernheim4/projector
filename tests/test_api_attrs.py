@@ -36,10 +36,9 @@ def test_attrs_models_can_render_attrs_operation_models():
         name: str
         address: Address
 
-    user = build_entity(User)
     views = views_for(User)
     user_api = api(
-        user,
+        User,
         renderer=AttrsRenderer(),
         Create=views.name + views.address.city,
         Update=views.name + views.address.city,
@@ -65,10 +64,9 @@ def test_required_wrapper_works_for_attrs_output():
     class User:
         address: Address | None
 
-    user = build_entity(User)
     views = views_for(User)
     user_api = api(
-        user,
+        User,
         renderer=AttrsRenderer(),
         Create=required(views.address.city),
     )
@@ -88,10 +86,9 @@ def test_optional_wrapper_works_for_attrs_output():
     class User:
         address: Address | None
 
-    user = build_entity(User)
     views = views_for(User)
     user_api = api(
-        user,
+        User,
         renderer=AttrsRenderer(),
         Create=optional(views.address.city),
     )
@@ -111,10 +108,9 @@ def test_nullable_subtree_remains_optional_for_attrs_output():
     class User:
         address: Address | None
 
-    user = build_entity(User)
     views = views_for(User)
     user_api = api(
-        user,
+        User,
         renderer=AttrsRenderer(),
         Create=views.address.city,
     )
@@ -135,10 +131,9 @@ def test_optional_projections_can_be_composed_for_attrs_output():
         name: str
         address: Address | None
 
-    user = build_entity(User)
     views = views_for(User)
     user_api = api(
-        user,
+        User,
         renderer=AttrsRenderer(),
         Create=optional(views.name) + optional(views.address.city),
     )

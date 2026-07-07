@@ -1,7 +1,7 @@
 from typing import TypedDict
 
 from app import optional, required, views_for
-from app.encode import TypedDictRenderer, api, build_entity
+from app.encode import TypedDictRenderer, api
 
 from tests.helpers import build_user_api
 
@@ -30,10 +30,9 @@ def test_typeddict_source_models_can_render_typed_dict_operation_models():
         name: str
         address: Address
 
-    user = build_entity(User)
     views = views_for(User)
     user_api = api(
-        user,
+        User,
         renderer=TypedDictRenderer(),
         Create=views.name + views.address.city,
         Update=views.name + views.address.city,
@@ -55,10 +54,9 @@ def test_required_wrapper_works_for_typed_dict_output():
     class User(TypedDict):
         address: Address | None
 
-    user = build_entity(User)
     views = views_for(User)
     user_api = api(
-        user,
+        User,
         renderer=TypedDictRenderer(),
         Create=required(views.address.city),
     )
@@ -76,10 +74,9 @@ def test_optional_wrapper_works_for_typed_dict_output():
     class User(TypedDict):
         address: Address | None
 
-    user = build_entity(User)
     views = views_for(User)
     user_api = api(
-        user,
+        User,
         renderer=TypedDictRenderer(),
         Create=optional(views.address.city),
     )
@@ -97,10 +94,9 @@ def test_nullable_subtree_remains_optional_for_typed_dict_output():
     class User(TypedDict):
         address: Address | None
 
-    user = build_entity(User)
     views = views_for(User)
     user_api = api(
-        user,
+        User,
         renderer=TypedDictRenderer(),
         Create=views.address.city,
     )
@@ -118,10 +114,9 @@ def test_optional_projections_can_be_composed_for_typed_dict_output():
         name: str
         address: Address
 
-    user = build_entity(User)
     views = views_for(User)
     user_api = api(
-        user,
+        User,
         renderer=TypedDictRenderer(),
         Create=optional(views.name) + optional(views.address.city),
     )
@@ -141,10 +136,9 @@ def test_optional_projections_can_be_composed_for_typed_dict_output_with_nullabl
         name: str
         address: Address | None
 
-    user = build_entity(User)
     views = views_for(User)
     user_api = api(
-        user,
+        User,
         renderer=TypedDictRenderer(),
         Create=optional(views.name) + optional(views.address.city),
     )

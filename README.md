@@ -13,7 +13,7 @@ Output can be: Pydantic models, dataclass models, attrs classes, or TypedDict cl
 import sqlite3
 from dataclasses import dataclass
 
-from app import api, build_entity, optional, renderer, required, views_for
+from app import api, optional, renderer, required, views_for
 
 
 # Application specific domain models:
@@ -30,10 +30,9 @@ class User:
 
 
 # Derive operation-specific models.
-user = build_entity(User)
 views = views_for(User)
 UserAPI = api(
-    user,
+    User,
     renderer=renderer.Pydantic,
     Create=required(views.name) + optional(views.address.city + views.address.zip),
     Read=optional(views.name) + optional(views.address.city),
@@ -68,7 +67,7 @@ For example:
 
 ```python
 UserAPI = api(
-    user,
+    User,
     renderer=renderer.Pydantic,
     CreateUserCommand=views.name + views.address.city + views.address.zip,
     Read=views.name + views.address.city,
@@ -93,7 +92,7 @@ output must require it or keep it optional:
 
 ```python
 UserAPI = api(
-    user,
+    User,
     renderer=renderer.Pydantic,
     Create=required(views.address.city),
     Read=optional(views.address.city),
@@ -220,7 +219,7 @@ Builds the schema IR from user models.
 
 - `Entity` is a structured schema node
 - `Field` is a primitive leaf node
-- `build_entity()` introspects supported input models
+- `build_entity()` introspects supported input models into the lower-level IR
 
 ### `app.projection`
 
@@ -247,7 +246,7 @@ Turns the IR/spec into concrete output classes.
 
 Public orchestration helpers.
 
-- `api()` builds operation-specific factories
+- `api()` takes a source model class and builds operation-specific factories
 - `build_model_and_factory()` wires renderer output to factories
 
 ### `app.stubgen`
