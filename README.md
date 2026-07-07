@@ -2,9 +2,9 @@
 
 Eliminate model explosion by deriving fully typed, operation-specific Python models from existing domain models by declaratively specifying the properties you want.
 
-Domain models (input) can be written using: dataclasses, Pydantic models, TypedDict classes, attrs classes, and plain annotated classes.
+Your application domain models (the input to projector) can be written using: dataclasses, Pydantic models, TypedDict classes, attrs classes, and plain annotated classes.
 
-Output can be: Pydantic models, dataclass models, attrs classes, or TypedDict classes.
+Projector can output the derived models in: Pydantic, dataclass, attrs, or TypedDict.
 
 
 ## Example
@@ -13,7 +13,7 @@ Output can be: Pydantic models, dataclass models, attrs classes, or TypedDict cl
 import sqlite3
 from dataclasses import dataclass
 
-from app import project, optional, renderer, required, views_for
+from projector import project, optional, renderer, required, views_for
 
 
 # Application specific domain models:
@@ -38,14 +38,14 @@ UserModels = project(
     Read=optional(views.name) + optional(views.address.city),
     Update=views.name,
 )
+UserCreate = UserModels.CreateModel
 
 
-# Use the derived user models. Types have `Model` (or `_model` if using
-# snake_case) appended to the end of the keyword argument:
+# Use the derived user models.
 conn = sqlite3.connect(":memory:")
 conn.execute("create table users (name text, city text, zip text)")
 
-def add_user_to_db(user: UserModels.CreateModel) -> None:
+def add_user_to_db(user: UserCreate) -> None:
     conn.execute(
         "insert into users (name, city, zip) values (?, ?, ?)",
         (user.name, user.address.city, user.address.zip),
@@ -102,7 +102,7 @@ UserModels = project(
 `required(...)` applies to the whole selected subtree. `optional(...)` keeps
 that subtree nullable in the generated output.
 
-Snake_case output names are still supported too. If you use `create` or
+`snake_case` output names are supported too. If you use `create` or
 `create_user_command`, the generated accessors stay snake_case:
 
 - `UserModels.create`
@@ -125,20 +125,6 @@ Output:
 - attrs classes
 - `TypedDict` classes
 
-## What It Does
-
-- reads user-land model classes into a schema IR
-- lets you select fields with a typed projection DSL
-- compiles projections into nested specs
-- renders Pydantic or dataclass output models
-- renders attrs output models
-- renders `TypedDict` output models
-- lets you name each generated model however you want
-- supports partial update semantics with unset-vs-`None`
-- provides factory functions for the generated classes
-- can generate `.pyi` stubs for consumer model modules so type checkers can
-  understand dynamic `views_for(...)` attributes
-
 ## Core Concepts
 
 `project(...)` is the main runtime entry point. It takes a source model class,
@@ -159,13 +145,14 @@ that wants to inspect the derived schema.
 ## Type Checking Build Step
 
 Projector currently derives models dynamically at runtime. Runtime use does not
-require generated files, but static type checkers need `.pyi` files to understand
-the dynamic view objects returned by `views_for(...)`.
+require generated files, but static type checkers like ty and pyrefly need
+`.pyi` files to understand the dynamic view objects returned by
+`views_for(...)`.
 
 Generate those type checker stubs with the CLI:
 
 ```bash
-PYTHONPATH=src:. projector type-stubs examples/demo_example/models.py examples/fast_api_example/projects/models.py
+projector type-stubs path/to/models.py path/to/other_models.py
 ```
 
 The command accepts one or more Python file paths and writes sibling `.pyi`
@@ -175,35 +162,28 @@ files:
 examples/demo_example/models.py -> examples/demo_example/models.pyi
 ```
 
-The repo helper command regenerates all example model stubs:
-
-```bash
-just stubs
-```
-
-This `.pyi` build step is the current recommended typed workflow. Generating
-full `.py` modules for derived models is intentionally deferred for now; it is
-only worth adding if users need importable generated source artifacts rather
-than dynamic runtime models plus type checker stubs.
-
 ## Example Layout
 
-The `examples/` directory is a fully isolated consumer example.
+The `examples/` directory contains fully isolated consumer examples.
 
 ```text
 examples/demo_example/        Demo domain models and runnable example
-examples/fast_api_example/    An example with an FastAPI HTTP server with CRUD and command style generated models
+examples/fast_api_example/    An example with a FastAPI HTTP server with CRUD and command style generated models
 ```
 
 Run the demo example:
 
 ```bash
+just demo-example
+# or
 PYTHONPATH=src uv run python -m examples.demo_example.main
 ```
 
 Run the FastAPI example:
 
 ```bash
+just fast-api-example
+# or
 PYTHONPATH=src .venv/bin/python -m examples.fast_api_example.http.main
 ```
 
@@ -219,7 +199,7 @@ just fast-api-example
 
 ## Library Structure
 
-### `app.ir`
+### `projector.ir`
 
 Builds the schema IR from user models.
 
@@ -227,7 +207,7 @@ Builds the schema IR from user models.
 - `Field` is a primitive leaf node
 - `build_entity()` introspects supported input models into the lower-level IR
 
-### `app.projection`
+### `projector.projection`
 
 Builds and compiles typed projections.
 
@@ -235,7 +215,7 @@ Builds and compiles typed projections.
 - `Leaf` supports `+` composition
 - `compile_projection()` turns selections into nested specs
 
-### `app.renderers`
+### `projector.renderers`
 
 Turns the IR/spec into concrete output classes.
 
@@ -248,28 +228,15 @@ Turns the IR/spec into concrete output classes.
 - `renderer.Attrs`
 - `renderer.TypedDict`
 
-### `app.encode`
+### `projector.encode`
 
 Public orchestration helpers.
 
 - `project()` takes a source model class and builds operation-specific factories
 - `build_model_and_factory()` wires renderer output to factories
 
-### `app.stubgen`
+### `projector.stubgen`
 
 Stub generation helpers.
 
 - `generate_views_pyi()` writes a `.pyi` file next to a consumer model module
-
-## What Works Today
-
-- dataclass, Pydantic, attrs, and plain-annotated input models
-- `TypedDict` input models
-- nested projections
-- generated Pydantic output models
-- generated dataclass output models
-- generated attrs output models
-- generated `TypedDict` output models
-- partial updates with unset-vs-`None`
-- generated factories
-- consumer-owned `.pyi` stub generation for type checkers
