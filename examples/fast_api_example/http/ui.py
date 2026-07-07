@@ -155,8 +155,8 @@ def root() -> HTMLResponse:
         "__ROWS__",
         "".join(
             f"""<li>
-              <button type="button" class="load-user" data-user-id="{row['id']}">#{row['id']}: {row['name']} ({row['email']}) - {row['city']}, {row['zip']}</button>
-              <button type="button" class="delete-user" data-user-id="{row['id']}">Delete</button>
+              <button type="button" class="load-user" data-user-id="{row["id"]}">#{row["id"]}: {row["name"]} ({row["email"]}) - {row["city"]}, {row["zip"]}</button>
+              <button type="button" class="delete-user" data-user-id="{row["id"]}">Delete</button>
             </li>"""
             for row in users
         ),
@@ -165,7 +165,7 @@ def root() -> HTMLResponse:
         "__PROJECT_ROWS__",
         "".join(
             f"""<li>
-              <button type="button" class="load-project" data-project-id="{row['id']}">#{row['id']}: {row['name']} - {row['description']} ({row['task_title']}, done={row['task_done']})</button>
+              <button type="button" class="load-project" data-project-id="{row["id"]}">#{row["id"]}: {row["name"]} - {row["description"]} ({row["task_title"]}, done={row["task_done"]})</button>
             </li>"""
             for row in projects
         ),

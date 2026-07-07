@@ -1,7 +1,14 @@
 from fastapi import APIRouter, HTTPException
 
 from ..db import conn
-from ..users.api import create_user, delete_user, get_user, list_users, rename_city, update_user
+from ..users.api import (
+    create_user,
+    delete_user,
+    get_user,
+    list_users,
+    rename_city,
+    update_user,
+)
 from ..users.api.common import row_to_user
 from ..users.models import User, UserCreate, UserRenameUserCity, UserUpdate
 

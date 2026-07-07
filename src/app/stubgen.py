@@ -38,7 +38,9 @@ def _render_entity_stubs(entity: Entity, parts: list[str], emitted: set[str]) ->
         return
     emitted.add(entity.name)
 
-    nested_entities = [field for field in entity.fields.values() if isinstance(field, Entity)]
+    nested_entities = [
+        field for field in entity.fields.values() if isinstance(field, Entity)
+    ]
     for nested_entity in nested_entities:
         _render_entity_stubs(nested_entity, parts, emitted)
 
@@ -115,7 +117,11 @@ def _render_type_expr(field_type: Any) -> str:
         key_type, value_type = get_args(field_type)
         return f"dict[{_render_type_expr(key_type)}, {_render_type_expr(value_type)}]"
     if origin is tuple:
-        return "tuple[" + ", ".join(_render_type_expr(arg) for arg in get_args(field_type)) + "]"
+        return (
+            "tuple["
+            + ", ".join(_render_type_expr(arg) for arg in get_args(field_type))
+            + "]"
+        )
     if origin is type:
         return f"type[{_render_type_expr(get_args(field_type)[0])}]"
     args = get_args(field_type)
@@ -126,4 +132,3 @@ def _render_type_expr(field_type: Any) -> str:
     rendered_args = ", ".join(_render_type_expr(arg) for arg in args)
     origin_name = getattr(origin, "__name__", str(origin).removeprefix("typing."))
     return f"{origin_name}[{rendered_args}]"
-

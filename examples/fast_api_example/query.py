@@ -29,7 +29,9 @@ class SelectQuery(Generic[ModelT]):
         clause = ""
         params: dict[str, Any] = {}
         if self._filters:
-            clause = " where " + " and ".join(f"{key} = :{key}" for key in self._filters)
+            clause = " where " + " and ".join(
+                f"{key} = :{key}" for key in self._filters
+            )
             params.update(self._filters)
 
         row = self._conn.execute(

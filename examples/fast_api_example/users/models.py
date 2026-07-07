@@ -21,8 +21,14 @@ user_views = views_for(User)
 UserAPI = api(
     User,
     renderer=renderer.Pydantic,
-    Create=user_views.name + user_views.email + user_views.address.city + user_views.address.zip,
-    Update=user_views.name + user_views.email + user_views.address.city + user_views.address.zip,
+    Create=user_views.name
+    + user_views.email
+    + user_views.address.city
+    + user_views.address.zip,
+    Update=user_views.name
+    + user_views.email
+    + user_views.address.city
+    + user_views.address.zip,
     RenameUserCity=user_views.address.city,
 )
 

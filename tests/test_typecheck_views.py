@@ -6,7 +6,9 @@ import textwrap
 from pathlib import Path
 
 
-def _run_typechecker(command: list[str], cwd: Path, pythonpath: Path) -> subprocess.CompletedProcess[str]:
+def _run_typechecker(
+    command: list[str], cwd: Path, pythonpath: Path
+) -> subprocess.CompletedProcess[str]:
     env = os.environ.copy()
     env["PYTHONPATH"] = f"{pythonpath / 'src'}:{pythonpath}"
     return subprocess.run(
@@ -104,6 +106,8 @@ def test_typecheckers_reject_missing_view_attributes(tmp_path: Path):
         encoding="utf-8",
     )
 
-    ty_result = _run_typechecker(["ty", "check", str(package / "api.py")], tmp_path, repo_root)
+    ty_result = _run_typechecker(
+        ["ty", "check", str(package / "api.py")], tmp_path, repo_root
+    )
     assert ty_result.returncode != 0
     assert "zi" in ty_result.stdout + ty_result.stderr

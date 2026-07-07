@@ -1,7 +1,15 @@
 from fastapi import APIRouter, HTTPException
 
 from ..db import conn
-from ..projects.api import add_task, complete_task, create_project, delete_project, get_project, list_projects, update_project
+from ..projects.api import (
+    add_task,
+    complete_task,
+    create_project,
+    delete_project,
+    get_project,
+    list_projects,
+    update_project,
+)
 from ..projects.api.common import row_to_project
 from ..projects.models import (
     Project,
@@ -59,7 +67,9 @@ def add(project_id: int, command: ProjectAddTask):
     return row
 
 
-@router.post("/projects/{project_id}/commands/complete-task", response_model=ProjectCompleteTask)
+@router.post(
+    "/projects/{project_id}/commands/complete-task", response_model=ProjectCompleteTask
+)
 def complete(project_id: int, command: ProjectCompleteTask):
     row = complete_task(conn, project_id, command)
     if row is None:

@@ -6,7 +6,9 @@ import textwrap
 from pathlib import Path
 
 
-def _run_typechecker(command: list[str], cwd: Path, pythonpath: Path) -> subprocess.CompletedProcess[str]:
+def _run_typechecker(
+    command: list[str], cwd: Path, pythonpath: Path
+) -> subprocess.CompletedProcess[str]:
     env = os.environ.copy()
     env["PYTHONPATH"] = f"{pythonpath / 'src'}:{pythonpath}"
     env["UV_CACHE_DIR"] = str(pythonpath / ".uv-cache")
@@ -225,5 +227,7 @@ def test_generated_api_is_typecheckable(tmp_path: Path):
         encoding="utf-8",
     )
 
-    result = _run_typechecker(["ty", "check", str(package / "consumer.py")], tmp_path, repo_root)
+    result = _run_typechecker(
+        ["ty", "check", str(package / "consumer.py")], tmp_path, repo_root
+    )
     assert result.returncode == 0, result.stdout + result.stderr

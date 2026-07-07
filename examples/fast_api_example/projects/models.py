@@ -21,8 +21,14 @@ project_views = views_for(Project)
 ProjectAPI = api(
     Project,
     renderer=renderer.Pydantic,
-    Create=project_views.name + project_views.description + project_views.task.title + project_views.task.done,
-    Update=project_views.name + project_views.description + project_views.task.title + project_views.task.done,
+    Create=project_views.name
+    + project_views.description
+    + project_views.task.title
+    + project_views.task.done,
+    Update=project_views.name
+    + project_views.description
+    + project_views.task.title
+    + project_views.task.done,
     AddTask=project_views.task.title,
     CompleteTask=project_views.task.done,
 )
