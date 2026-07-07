@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from app import project, renderer, views_for
+from projector import project, renderer, views_for
 
 
 @dataclass(kw_only=True)

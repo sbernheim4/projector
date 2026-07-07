@@ -1,5 +1,5 @@
-from app import optional, required, views_for
-from app.encode import AttrsRenderer, project, build_entity
+from projector import optional, required, views_for
+from projector.encode import AttrsRenderer, project, build_entity
 
 
 def test_build_entity_supports_attrs_models():

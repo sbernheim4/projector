@@ -32,7 +32,7 @@ def test_typecheckers_reject_missing_view_attributes(tmp_path: Path):
             """
             from dataclasses import dataclass
 
-            from app import views_for
+            from projector import views_for
 
 
             @dataclass(kw_only=True)
@@ -56,7 +56,7 @@ def test_typecheckers_reject_missing_view_attributes(tmp_path: Path):
             """
             from typing import Any, overload
 
-            from app.projection import Leaf
+            from projector.projection import Leaf
 
 
             class Address:

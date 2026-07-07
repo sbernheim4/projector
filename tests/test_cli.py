@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from app.cli import main
+from projector.cli import main
 
 
 def test_type_stubs_command_accepts_python_file_path(tmp_path: Path):

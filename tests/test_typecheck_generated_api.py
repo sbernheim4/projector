@@ -5,7 +5,7 @@ import subprocess
 import textwrap
 from pathlib import Path
 
-from app.cli import main
+from projector.cli import main
 
 
 def _run_typechecker(
@@ -35,7 +35,7 @@ def test_generated_project_is_typecheckable(tmp_path: Path):
             """
             from dataclasses import dataclass
 
-            from app import project, renderer, views_for
+            from projector import project, renderer, views_for
 
 
             @dataclass(kw_only=True)
@@ -73,7 +73,7 @@ def test_generated_project_is_typecheckable(tmp_path: Path):
             """
             from typing import Any, overload
 
-            from app.projection import Leaf
+            from projector.projection import Leaf
 
 
             class Address:
@@ -247,7 +247,7 @@ def test_cli_generated_type_stubs_are_typecheckable(tmp_path: Path):
             """
             from dataclasses import dataclass
 
-            from app import project, renderer, views_for
+            from projector import project, renderer, views_for
 
 
             @dataclass(kw_only=True)

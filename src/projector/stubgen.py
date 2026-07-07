@@ -60,7 +60,7 @@ def render_views_stub(_module_name: str, entities: Iterable[Entity]) -> str:
     parts = [
         "from typing import Any, overload",
         "",
-        "from app.projection import Leaf",
+        "from projector.projection import Leaf",
         "",
     ]
 

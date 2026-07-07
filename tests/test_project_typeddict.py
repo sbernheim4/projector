@@ -1,7 +1,7 @@
 from typing import TypedDict
 
-from app import optional, required, views_for
-from app.encode import TypedDictRenderer, project
+from projector import optional, required, views_for
+from projector.encode import TypedDictRenderer, project
 
 from tests.helpers import build_user_models
 

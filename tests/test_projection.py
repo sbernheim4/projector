@@ -1,14 +1,14 @@
 import pytest
 
-from app import optional, required, views_for
-from app.encode import (
+from projector import optional, required, views_for
+from projector.encode import (
     DataclassRenderer,
     PydanticRenderer,
     project,
     build_entity,
     compile_projection,
 )
-from app.projection import Projection
+from projector.projection import Projection
 
 
 def test_compile_projection_converts_flat_and_nested_paths():

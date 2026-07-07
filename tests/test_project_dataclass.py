@@ -1,7 +1,7 @@
 from dataclasses import is_dataclass
 
-from app import optional, required, views_for
-from app.encode import DataclassRenderer, UNSET, project
+from projector import optional, required, views_for
+from projector.encode import DataclassRenderer, UNSET, project
 
 from tests.helpers import build_user_models
 

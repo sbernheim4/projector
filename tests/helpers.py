@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from app import views_for
-from app.encode import project
+from projector import views_for
+from projector.encode import project
 
 
 def build_user_models(renderer):

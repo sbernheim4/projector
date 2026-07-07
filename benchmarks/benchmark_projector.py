@@ -10,7 +10,7 @@ from typing import Any, Callable, TypedDict
 import attrs
 from pydantic import BaseModel
 
-from app import project, renderer, views_for
+from projector import project, renderer, views_for
 
 
 @dataclass(kw_only=True)

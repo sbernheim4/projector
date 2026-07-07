@@ -1,6 +1,6 @@
 from typing import Any, overload
 
-from app.projection import Leaf
+from projector.projection import Leaf
 
 class Address:
     city: str

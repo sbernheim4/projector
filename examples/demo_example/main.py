@@ -8,7 +8,7 @@ from typing import TypedDict
 
 import attrs
 
-from app import (
+from projector import (
     UNSET,
     project,
     build_entity,

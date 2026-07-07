@@ -3,7 +3,7 @@ from typing import TypedDict
 import attrs
 from pydantic import BaseModel
 
-from app.encode import Entity, Field, build_entity
+from projector.encode import Entity, Field, build_entity
 
 
 def test_build_entity_supports_pydantic_source_models():

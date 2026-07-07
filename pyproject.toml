@@ -1,5 +1,5 @@
 [project]
-name = "python-gen"
+name = "projector"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
@@ -14,7 +14,7 @@ dependencies = [
 ]
 
 [project.scripts]
-projector = "app.cli:main"
+projector = "projector.cli:main"
 
 [build-system]
 requires = ["setuptools>=61", "wheel"]

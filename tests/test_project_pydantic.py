@@ -1,8 +1,8 @@
 import pytest
 from pydantic import BaseModel, ValidationError
 
-from app.encode import PydanticRenderer, project
-from app import optional, required, views_for
+from projector.encode import PydanticRenderer, project
+from projector import optional, required, views_for
 
 from tests.helpers import build_user_models
 
