@@ -3,6 +3,8 @@ from __future__ import annotations
 import textwrap
 from pathlib import Path
 
+import pytest
+
 from app.cli import main
 
 
@@ -87,3 +89,40 @@ def test_type_stubs_command_accepts_multiple_python_file_paths(tmp_path: Path):
     assert "class ProjectView:" in second_module.with_suffix(".pyi").read_text(
         encoding="utf-8"
     )
+
+
+def test_type_stubs_command_rejects_non_python_file_path(tmp_path: Path):
+    module_path = tmp_path / "models.txt"
+    module_path.write_text("", encoding="utf-8")
+
+    with pytest.raises(SystemExit, match="Expected a Python module path"):
+        main(["type-stubs", str(module_path)])
+
+
+def test_type_stubs_command_keeps_earlier_outputs_when_later_path_fails(
+    tmp_path: Path,
+):
+    package = tmp_path / "sample"
+    package.mkdir()
+    (package / "__init__.py").write_text("", encoding="utf-8")
+    valid_module = package / "models.py"
+    valid_module.write_text(
+        textwrap.dedent(
+            """
+            from dataclasses import dataclass
+
+
+            @dataclass(kw_only=True)
+            class User:
+                name: str
+            """
+        ),
+        encoding="utf-8",
+    )
+    invalid_module = package / "invalid.txt"
+    invalid_module.write_text("", encoding="utf-8")
+
+    with pytest.raises(SystemExit, match="Expected a Python module path"):
+        main(["type-stubs", str(valid_module), str(invalid_module)])
+
+    assert valid_module.with_suffix(".pyi").exists()

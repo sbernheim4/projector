@@ -5,6 +5,8 @@ import subprocess
 import textwrap
 from pathlib import Path
 
+from app.cli import main
+
 
 def _run_typechecker(
     command: list[str], cwd: Path, pythonpath: Path
@@ -229,5 +231,77 @@ def test_generated_project_is_typecheckable(tmp_path: Path):
 
     result = _run_typechecker(
         ["ty", "check", str(package / "consumer.py")], tmp_path, repo_root
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_cli_generated_type_stubs_are_typecheckable(tmp_path: Path):
+    repo_root = Path(__file__).resolve().parents[1]
+    package = tmp_path / "sample_cli"
+    package.mkdir()
+    (package / "__init__.py").write_text("", encoding="utf-8")
+
+    models_path = package / "models.py"
+    models_path.write_text(
+        textwrap.dedent(
+            """
+            from dataclasses import dataclass
+
+            from app import project, renderer, views_for
+
+
+            @dataclass(kw_only=True)
+            class Address:
+                city: str
+                zip: str
+
+
+            @dataclass(kw_only=True)
+            class User:
+                name: str
+                address: Address
+
+
+            user_views = views_for(User)
+            UserModels = project(
+                User,
+                renderer=renderer.Pydantic,
+                Create=user_views.name + user_views.address.city + user_views.address.zip,
+                RenameCity=user_views.address.city,
+            )
+
+            UserCreate = UserModels.CreateModel
+            UserRenameCity = UserModels.RenameCityModel
+            """
+        ),
+        encoding="utf-8",
+    )
+
+    main(["type-stubs", str(models_path)])
+
+    (package / "consumer.py").write_text(
+        textwrap.dedent(
+            """
+            from sample_cli.models import UserCreate, UserRenameCity, user_views
+
+
+            def use_create(payload: UserCreate) -> str:
+                return payload.address.zip
+
+
+            def use_command(payload: UserRenameCity) -> str:
+                return payload.address.city
+
+
+            _ok = user_views.address.city
+            """
+        ),
+        encoding="utf-8",
+    )
+
+    result = _run_typechecker(
+        ["ty", "check", str(package / "consumer.py")],
+        tmp_path,
+        repo_root,
     )
     assert result.returncode == 0, result.stdout + result.stderr

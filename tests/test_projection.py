@@ -45,6 +45,25 @@ def test_project_rejects_prebuilt_entities():
         )
 
 
+def test_project_keeps_built_entity_metadata():
+    from dataclasses import dataclass
+
+    @dataclass(kw_only=True)
+    class User:
+        name: str
+
+    views = views_for(User)
+
+    user_models = project(
+        User,
+        renderer=PydanticRenderer(),
+        Create=views.name,
+    )
+
+    assert user_models.entity.name == "User"
+    assert user_models.renderer.__class__ is PydanticRenderer
+
+
 def test_project_supports_named_outputs():
     from dataclasses import dataclass
 
