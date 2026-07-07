@@ -43,7 +43,7 @@ def build_model_and_factory(entity, renderer, projection, name, partial: bool = 
     return model_cls, factory
 
 
-class EntityAPI:
+class ProjectedModels:
     entity: Any
 
     renderer: Any
@@ -68,7 +68,7 @@ def project(model_cls, renderer, **outputs):
         )
 
     entity = build_entity(model_cls)
-    api_obj = EntityAPI()
+    projected_models = ProjectedModels()
 
     def build(name, projection, partial: bool = False):
         model_cls, factory = build_model_and_factory(
@@ -94,10 +94,10 @@ def project(model_cls, renderer, **outputs):
             projection,
             partial=partial,
         )
-        setattr(api_obj, model_attr_name, model_cls)
-        setattr(api_obj, accessor_name, factory)
+        setattr(projected_models, model_attr_name, model_cls)
+        setattr(projected_models, accessor_name, factory)
 
-    api_obj.entity = entity
-    api_obj.renderer = renderer
+    projected_models.entity = entity
+    projected_models.renderer = renderer
 
-    return api_obj
+    return projected_models
