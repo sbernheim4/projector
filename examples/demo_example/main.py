@@ -29,7 +29,7 @@ def run_example() -> None:
     views = views_for(User)
 
     # Step 2: generate Pydantic models for create/read/update operations.
-    user_api = project(
+    user_models = project(
         User,
         renderer=renderer.Pydantic,
         read=views.name + views.address.city,
@@ -38,11 +38,11 @@ def run_example() -> None:
     )
 
     # Step 3: instantiate the generated Pydantic models through the factories.
-    instance = user_api.create(name="Sam", address={"city": "Paris", "zip": "75001"})
-    update = user_api.update(name=None)
+    instance = user_models.create(name="Sam", address={"city": "Paris", "zip": "75001"})
+    update = user_models.update(name=None)
 
     # Step 4: generate dataclass models for the same projections.
-    dataclass_user_api = project(
+    dataclass_user_models = project(
         User,
         renderer=renderer.Dataclass,
         read=views.name + views.address.city,
@@ -51,10 +51,10 @@ def run_example() -> None:
     )
 
     # Step 5: show the dataclass update factory preserving unset-vs-None semantics.
-    dataclass_update = dataclass_user_api.update(address={"city": "Paris"})
+    dataclass_update = dataclass_user_models.update(address={"city": "Paris"})
 
     # Step 6: generate attrs models for the same projections.
-    attrs_user_api = project(
+    attrs_user_models = project(
         User,
         renderer=renderer.Attrs,
         read=views.name + views.address.city,
@@ -63,11 +63,11 @@ def run_example() -> None:
     )
 
     # Step 7: instantiate the generated attrs models through the factories.
-    attrs_create = attrs_user_api.create(
+    attrs_create = attrs_user_models.create(
         name="Sam",
         address={"city": "Paris", "zip": "75001"},
     )
-    attrs_update = attrs_user_api.update(address={"city": "Paris"})
+    attrs_update = attrs_user_models.update(address={"city": "Paris"})
 
     class TypedAddress(TypedDict):
         city: str
@@ -80,14 +80,14 @@ def run_example() -> None:
     typed_views = views_for(TypedUser)
 
     # Step 8: generate TypedDict models and use the returned dict values directly.
-    typed_user_api = project(
+    typed_user_models = project(
         TypedUser,
         renderer=renderer.TypedDict,
         create=typed_views.name + typed_views.address.city + typed_views.address.zip,
         read=typed_views.name + typed_views.address.city,
         update=typed_views.name,
     )
-    typed_created = typed_user_api.create(
+    typed_created = typed_user_models.create(
         name="Sam",
         address={"city": "Paris", "zip": "75001"},
     )
@@ -99,65 +99,65 @@ def run_example() -> None:
     nullable_views = views_for(NullableUser)
 
     # Step 9: show required/optional selectors on a nullable subtree.
-    required_user_api = project(
+    required_user_models = project(
         NullableUser,
         renderer=renderer.Pydantic,
         create=required(nullable_views.address.city),
     )
-    optional_user_api = project(
+    optional_user_models = project(
         NullableUser,
         renderer=renderer.Pydantic,
         create=optional(nullable_views.address.city),
     )
-    required_address = required_user_api.create(address={"city": "Paris"})
-    optional_address = optional_user_api.create(address=None)
+    required_address = required_user_models.create(address={"city": "Paris"})
+    optional_address = optional_user_models.create(address=None)
 
-    print("Pydantic API")
-    print("  create model:", user_api.create_model)
-    print("  read model:", user_api.read_model)
-    print("  update model:", user_api.update_model)
+    print("Pydantic Models")
+    print("  create model:", user_models.create_model)
+    print("  read model:", user_models.read_model)
+    print("  update model:", user_models.update_model)
     print("  create instance:", instance)
     print("  update instance:", update)
     print("  update fields set:", update.model_fields_set)
 
-    print("Dataclass API")
-    print("  create model:", dataclass_user_api.create_model)
-    print("  read model:", dataclass_user_api.read_model)
-    print("  update model:", dataclass_user_api.update_model)
+    print("Dataclass Models")
+    print("  create model:", dataclass_user_models.create_model)
+    print("  read model:", dataclass_user_models.read_model)
+    print("  update model:", dataclass_user_models.update_model)
     print("  update instance:", dataclass_update)
-    print("  update model is dataclass:", is_dataclass(dataclass_user_api.update_model))
+    print("  update model is dataclass:", is_dataclass(dataclass_user_models.update_model))
     print("  omitted name is UNSET:", dataclass_update.name is UNSET)
 
-    print("Attrs API")
-    print("  create model:", attrs_user_api.create_model)
-    print("  read model:", attrs_user_api.read_model)
-    print("  update model:", attrs_user_api.update_model)
+    print("Attrs Models")
+    print("  create model:", attrs_user_models.create_model)
+    print("  read model:", attrs_user_models.read_model)
+    print("  update model:", attrs_user_models.update_model)
     print("  create instance:", attrs_create)
     print("  update instance:", attrs_update)
-    print("  update model is attrs:", attrs.has(attrs_user_api.update_model))
+    print("  update model is attrs:", attrs.has(attrs_user_models.update_model))
 
-    print("TypedDict API")
-    print("  create model:", typed_user_api.create_model)
-    print("  read model:", typed_user_api.read_model)
-    print("  update model:", typed_user_api.update_model)
+    print("TypedDict Models")
+    print("  create model:", typed_user_models.create_model)
+    print("  read model:", typed_user_models.read_model)
+    print("  update model:", typed_user_models.update_model)
     print("  create instance:", typed_created)
     print("  create instance type:", type(typed_created))
 
-    print("Required/Optional API")
-    print("  required model:", required_user_api.create_model)
-    print("  optional model:", optional_user_api.create_model)
+    print("Required/Optional Models")
+    print("  required model:", required_user_models.create_model)
+    print("  optional model:", optional_user_models.create_model)
     print("  required instance:", required_address)
     print("  optional instance:", optional_address)
 
-    nullable_api = project(
+    nullable_models = project(
         NullableUser,
         renderer=renderer.Pydantic,
         create=optional(nullable_views.address.city),
     )
-    nullable_instance = nullable_api.create(address=None)
+    nullable_instance = nullable_models.create(address=None)
 
-    print("Nullable API")
-    print("  create model:", nullable_api.create_model)
+    print("Nullable Models")
+    print("  create model:", nullable_models.create_model)
     print("  create instance:", nullable_instance)
 
 

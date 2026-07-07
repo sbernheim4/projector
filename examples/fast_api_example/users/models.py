@@ -18,7 +18,7 @@ class User:
 
 user_views = views_for(User)
 
-UserAPI = project(
+UserModels = project(
     User,
     renderer=renderer.Pydantic,
     Create=user_views.name
@@ -32,6 +32,6 @@ UserAPI = project(
     RenameUserCity=user_views.address.city,
 )
 
-UserCreate = UserAPI.CreateModel
-UserUpdate = UserAPI.UpdateModel
-UserRenameUserCity = UserAPI.RenameUserCityModel
+UserCreate = UserModels.CreateModel
+UserUpdate = UserModels.UpdateModel
+UserRenameUserCity = UserModels.RenameUserCityModel

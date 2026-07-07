@@ -31,7 +31,7 @@ class User:
 
 # Derive operation-specific models.
 views = views_for(User)
-UserAPI = project(
+UserModels = project(
     User,
     renderer=renderer.Pydantic,
     Create=required(views.name) + optional(views.address.city + views.address.zip),
@@ -45,7 +45,7 @@ UserAPI = project(
 conn = sqlite3.connect(":memory:")
 conn.execute("create table users (name text, city text, zip text)")
 
-def add_user_to_db(user: UserAPI.CreateModel) -> None:
+def add_user_to_db(user: UserModels.CreateModel) -> None:
     conn.execute(
         "insert into users (name, city, zip) values (?, ?, ?)",
         (user.name, user.address.city, user.address.zip),
@@ -54,7 +54,7 @@ def add_user_to_db(user: UserAPI.CreateModel) -> None:
 
 
 # Create an instance with the exact keyword argument provided
-new_user = UserAPI.Create(name="John", address={"city": "Paris", "zip": "75001"})
+new_user = UserModels.Create(name="John", address={"city": "Paris", "zip": "75001"})
 add_user_to_db(new_user)
 ```
 
@@ -66,7 +66,7 @@ application.
 For example:
 
 ```python
-UserAPI = project(
+UserModels = project(
     User,
     renderer=renderer.Pydantic,
     CreateUserCommand=views.name + views.address.city + views.address.zip,
@@ -77,21 +77,21 @@ UserAPI = project(
 
 That gives you:
 
-- `UserAPI.CreateUserCommandModel`
-- `UserAPI.ReadModel`
-- `UserAPI.UpdateNameCommandModel`
+- `UserModels.CreateUserCommandModel`
+- `UserModels.ReadModel`
+- `UserModels.UpdateNameCommandModel`
 
 And factories that instantiate those models:
 
-- `UserAPI.CreateUserCommand(...)`
-- `UserAPI.Read(...)`
-- `UserAPI.UpdateNameCommand(...)`
+- `UserModels.CreateUserCommand(...)`
+- `UserModels.Read(...)`
+- `UserModels.UpdateNameCommand(...)`
 
 If a source model field can be `None`, you can still decide whether a specific
 output must require it or keep it optional:
 
 ```python
-UserAPI = project(
+UserModels = project(
     User,
     renderer=renderer.Pydantic,
     Create=required(views.address.city),
@@ -105,10 +105,10 @@ that subtree nullable in the generated output.
 Snake_case output names are still supported too. If you use `create` or
 `create_user_command`, the generated accessors stay snake_case:
 
-- `UserAPI.create`
-- `UserAPI.create_model`
-- `UserAPI.create_user_command`
-- `UserAPI.create_user_command_model`
+- `UserModels.create`
+- `UserModels.create_model`
+- `UserModels.create_user_command`
+- `UserModels.create_user_command_model`
 
 ## Supported input and output types
 

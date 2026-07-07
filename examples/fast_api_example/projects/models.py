@@ -18,7 +18,7 @@ class Project:
 
 project_views = views_for(Project)
 
-ProjectAPI = project(
+ProjectModels = project(
     Project,
     renderer=renderer.Pydantic,
     Create=project_views.name
@@ -33,7 +33,7 @@ ProjectAPI = project(
     CompleteTask=project_views.task.done,
 )
 
-ProjectCreate = ProjectAPI.CreateModel
-ProjectUpdate = ProjectAPI.UpdateModel
-ProjectAddTask = ProjectAPI.AddTaskModel
-ProjectCompleteTask = ProjectAPI.CompleteTaskModel
+ProjectCreate = ProjectModels.CreateModel
+ProjectUpdate = ProjectModels.UpdateModel
+ProjectAddTask = ProjectModels.AddTaskModel
+ProjectCompleteTask = ProjectModels.CompleteTaskModel

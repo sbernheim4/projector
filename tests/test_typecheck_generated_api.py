@@ -50,7 +50,7 @@ def test_generated_project_is_typecheckable(tmp_path: Path):
 
 
             user_views = views_for(User)
-            UserAPI = project(
+            UserModels = project(
                 User,
                 renderer=renderer.Pydantic,
                 create=user_views.name + user_views.email + user_views.address.city + user_views.address.zip,
@@ -58,9 +58,9 @@ def test_generated_project_is_typecheckable(tmp_path: Path):
                 renameUserCity=user_views.address.city,
             )
 
-            UserCreate = UserAPI.CreateModel
-            UserUpdate = UserAPI.UpdateModel
-            UserRenameUserCity = UserAPI.RenameUserCityModel
+            UserCreate = UserModels.CreateModel
+            UserUpdate = UserModels.UpdateModel
+            UserRenameUserCity = UserModels.RenameUserCityModel
             """
         ),
         encoding="utf-8",

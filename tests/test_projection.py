@@ -60,18 +60,18 @@ def test_project_supports_named_outputs():
 
     views = views_for(User)
 
-    user_api = project(
+    user_models = project(
         User,
         renderer=PydanticRenderer(),
         Create=views.name + views.address.city,
         UpdateBirthday=views.address.dob,
     )
 
-    assert user_api.CreateModel.__name__ == "UserCreate"
-    assert user_api.UpdateBirthdayModel.__name__ == "UserUpdateBirthday"
+    assert user_models.CreateModel.__name__ == "UserCreate"
+    assert user_models.UpdateBirthdayModel.__name__ == "UserUpdateBirthday"
 
-    created = user_api.Create(name="Sam", address={"city": "Paris"})
-    updated = user_api.UpdateBirthday(address={"dob": "2000-01-01"})
+    created = user_models.Create(name="Sam", address={"city": "Paris"})
+    updated = user_models.UpdateBirthday(address={"dob": "2000-01-01"})
 
     assert created.name == "Sam"
     assert updated.address.dob == "2000-01-01"
@@ -86,28 +86,28 @@ def test_project_accessor_style_follows_output_name_style():
 
     views = views_for(User)
 
-    snake_api = project(
+    snake_models = project(
         User,
         renderer=PydanticRenderer(),
         create=views.name,
     )
-    pascal_api = project(
+    pascal_models = project(
         User,
         renderer=PydanticRenderer(),
         Create=views.name,
     )
-    mixed_api = project(
+    mixed_models = project(
         User,
         renderer=PydanticRenderer(),
         renameUserCity=views.name,
     )
 
-    assert hasattr(snake_api, "create")
-    assert hasattr(snake_api, "create_model")
-    assert hasattr(pascal_api, "Create")
-    assert hasattr(pascal_api, "CreateModel")
-    assert hasattr(mixed_api, "RenameUserCity")
-    assert hasattr(mixed_api, "RenameUserCityModel")
+    assert hasattr(snake_models, "create")
+    assert hasattr(snake_models, "create_model")
+    assert hasattr(pascal_models, "Create")
+    assert hasattr(pascal_models, "CreateModel")
+    assert hasattr(mixed_models, "RenameUserCity")
+    assert hasattr(mixed_models, "RenameUserCityModel")
 
 
 def test_required_wrapper_works_for_dataclass_output():
@@ -122,13 +122,13 @@ def test_required_wrapper_works_for_dataclass_output():
         address: Address | None
 
     views = views_for(User)
-    user_api = project(
+    user_models = project(
         User,
         renderer=DataclassRenderer(),
         Create=required(views.address.city),
     )
 
-    created = user_api.Create(address={"city": "Paris"})
+    created = user_models.Create(address={"city": "Paris"})
     assert created.address.city == "Paris"
 
 
@@ -144,11 +144,11 @@ def test_optional_wrapper_works_for_dataclass_output():
         address: Address | None
 
     views = views_for(User)
-    user_api = project(
+    user_models = project(
         User,
         renderer=DataclassRenderer(),
         Create=optional(views.address.city),
     )
 
-    created = user_api.Create(address=None)
+    created = user_models.Create(address=None)
     assert created.address is None

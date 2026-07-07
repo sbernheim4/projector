@@ -4,7 +4,7 @@ from app import views_for
 from app.encode import project
 
 
-def build_user_api(renderer):
+def build_user_models(renderer):
     @dataclass(kw_only=True)
     class Address:
         city: str
