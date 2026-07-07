@@ -5,7 +5,7 @@ from ..projects.sql_queries import LIST_PROJECTS
 from ..users.sql_queries import LIST_USERS
 from ..db import conn
 
-router = APIRouter()
+router: APIRouter = APIRouter()
 
 
 @router.get("/")

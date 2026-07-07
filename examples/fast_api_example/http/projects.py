@@ -11,7 +11,7 @@ from ..projects.models import (
     ProjectUpdate,
 )
 
-router = APIRouter()
+router: APIRouter = APIRouter()
 
 conn.register(Project, "projects", row_to_project)
 

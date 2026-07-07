@@ -1,7 +1,6 @@
-from importlib import import_module
 from pathlib import Path
 from types import NoneType
-from typing import Any, Iterable, get_args, get_origin, get_type_hints
+from typing import Any, Iterable, get_args, get_origin
 
 from .ir import Entity
 
@@ -128,53 +127,3 @@ def _render_type_expr(field_type: Any) -> str:
     origin_name = getattr(origin, "__name__", str(origin).removeprefix("typing."))
     return f"{origin_name}[{rendered_args}]"
 
-
-def _render_class_stub(
-    name: str,
-    cls: type[Any],
-    emitted: set[str],
-    parts: list[str],
-) -> None:
-    if name in emitted:
-        return
-    emitted.add(name)
-
-    parts.append(f"class {name}:")
-    annotations = get_type_hints(cls, include_extras=True)
-    if not annotations:
-        parts.append("    ...")
-        parts.append("")
-        return
-
-    nested_types: list[tuple[str, type[Any]]] = []
-    for field_name, field_type in annotations.items():
-        if isinstance(field_type, type) and field_type.__module__ != "builtins":
-            nested_types.append((field_type.__name__, field_type))
-        parts.append(f"    {field_name}: {_render_type_expr(field_type)}")
-
-    parts.append("")
-
-    for nested_name, nested_cls in nested_types:
-        _render_class_stub(nested_name, nested_cls, emitted, parts)
-
-
-def render_module_class_stubs(module_name: str) -> str:
-    module = import_module(module_name)
-    parts: list[str] = []
-    has_router = hasattr(module, "router")
-
-    if has_router:
-        parts.append("from fastapi import APIRouter")
-        parts.append("")
-        parts.append("router: APIRouter")
-        parts.append("")
-
-    return "\n".join(parts).rstrip() + "\n"
-
-
-def write_module_class_stubs(module_name: str, *, target: Path | None = None) -> Path:
-    module_path = Path(*module_name.split("."))
-    if target is None:
-        target = module_path.with_suffix(".pyi")
-    target.write_text(render_module_class_stubs(module_name), encoding="utf-8")
-    return target

@@ -146,7 +146,7 @@ builds the classes.
 - lets you name each generated model however you want
 - supports partial update semantics with unset-vs-`None`
 - provides factory functions for the generated classes
-- can generate `.pyi` stubs for consumer modules and HTTP routers
+- can generate `.pyi` stubs for consumer model modules
 
 ## Example Layout
 

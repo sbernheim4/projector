@@ -5,7 +5,7 @@ from ..users.api import create_user, delete_user, get_user, list_users, rename_c
 from ..users.api.common import row_to_user
 from ..users.models import User, UserCreate, UserRenameUserCity, UserUpdate
 
-router = APIRouter()
+router: APIRouter = APIRouter()
 
 conn.register(User, "users", row_to_user)
 
