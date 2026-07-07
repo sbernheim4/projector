@@ -425,7 +425,10 @@ def run_hot_path_benchmarks(*, iterations: int) -> None:
         print(label)
         manual_time = benchmark("manual", manual, iterations=iterations)
         projected_time = benchmark("project(...)", projected, iterations=iterations)
-        print(f"ratio project/manual{'':<18} {projected_time / manual_time:>10.3f}x")
+        delta = projected_time - manual_time
+        ratio = projected_time / manual_time
+        print(f"overhead project-manual{'':<13} {delta:>10.3f} us/op")
+        print(f"ratio project/manual{'':<18} {ratio:>10.3f}x")
 
 
 def run_generation_benchmarks(*, iterations: int) -> None:

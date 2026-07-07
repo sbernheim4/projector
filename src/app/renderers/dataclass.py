@@ -1,5 +1,5 @@
-from dataclasses import is_dataclass, make_dataclass
-from typing import Any, get_type_hints
+from dataclasses import make_dataclass
+from typing import Any
 
 from ..ir import Field, UNSET, dataclass_update_type
 from ..naming import pascal_case
@@ -8,6 +8,7 @@ from ..naming import pascal_case
 class DataclassRenderer:
     def __init__(self):
         self._models_by_name: dict[str, type] = {}
+        self._conversion_plans: dict[type, dict[str, type]] = {}
 
     def render(self, entity, spec, name: str, partial: bool = False) -> type:
         model_cls = self._build_model(spec, entity, name, partial=partial)
@@ -20,6 +21,7 @@ class DataclassRenderer:
 
     def _build_model(self, spec, entity, name: str, partial: bool) -> type:
         dataclass_fields: list[Any] = []
+        conversion_plan: dict[str, type] = {}
 
         for key, sub_spec in spec.items():
             node = entity.fields[key]
@@ -33,6 +35,7 @@ class DataclassRenderer:
                     f"{name}{pascal_case(key)}",
                     partial=partial,
                 )
+                conversion_plan[key] = field_type
 
             if partial and sub_spec.required is not True:
                 dataclass_fields.append(
@@ -43,17 +46,17 @@ class DataclassRenderer:
 
         model_cls = make_dataclass(name, dataclass_fields, kw_only=True)
         self._models_by_name[name] = model_cls
+        self._conversion_plans[model_cls] = conversion_plan
         return model_cls
 
     def _convert_kwargs(
         self, model_cls: type, kwargs: dict[str, Any]
     ) -> dict[str, Any]:
-        hints = get_type_hints(model_cls)
+        conversion_plan = self._conversion_plans.get(model_cls, {})
         converted = {}
 
         for key, value in kwargs.items():
-            field_type = hints.get(key)
-            nested_type = self._nested_dataclass_type(field_type)
+            nested_type = conversion_plan.get(key)
 
             if isinstance(value, dict) and nested_type is not None:
                 converted[key] = nested_type(
@@ -63,15 +66,3 @@ class DataclassRenderer:
                 converted[key] = value
 
         return converted
-
-    def _nested_dataclass_type(self, field_type: Any) -> type | None:
-        if isinstance(field_type, type) and is_dataclass(field_type):
-            return field_type
-
-        union_args = getattr(field_type, "__args__", ())
-
-        for arg in union_args:
-            if isinstance(arg, type) and is_dataclass(arg):
-                return arg
-
-        return None
