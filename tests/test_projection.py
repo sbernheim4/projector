@@ -4,7 +4,7 @@ from app import optional, required, views_for
 from app.encode import (
     DataclassRenderer,
     PydanticRenderer,
-    api,
+    project,
     build_entity,
     compile_projection,
 )
@@ -27,7 +27,7 @@ def test_compile_projection_rejects_unknown_input():
         compile_projection(object())
 
 
-def test_api_rejects_prebuilt_entities():
+def test_project_rejects_prebuilt_entities():
     from dataclasses import dataclass
 
     @dataclass(kw_only=True)
@@ -38,14 +38,14 @@ def test_api_rejects_prebuilt_entities():
     views = views_for(User)
 
     with pytest.raises(TypeError, match="pass User, not build_entity"):
-        api(
+        project(
             entity,
             renderer=PydanticRenderer(),
             Create=views.name,
         )
 
 
-def test_api_supports_named_outputs():
+def test_project_supports_named_outputs():
     from dataclasses import dataclass
 
     @dataclass(kw_only=True)
@@ -60,7 +60,7 @@ def test_api_supports_named_outputs():
 
     views = views_for(User)
 
-    user_api = api(
+    user_api = project(
         User,
         renderer=PydanticRenderer(),
         Create=views.name + views.address.city,
@@ -77,7 +77,7 @@ def test_api_supports_named_outputs():
     assert updated.address.dob == "2000-01-01"
 
 
-def test_api_accessor_style_follows_output_name_style():
+def test_project_accessor_style_follows_output_name_style():
     from dataclasses import dataclass
 
     @dataclass(kw_only=True)
@@ -86,17 +86,17 @@ def test_api_accessor_style_follows_output_name_style():
 
     views = views_for(User)
 
-    snake_api = api(
+    snake_api = project(
         User,
         renderer=PydanticRenderer(),
         create=views.name,
     )
-    pascal_api = api(
+    pascal_api = project(
         User,
         renderer=PydanticRenderer(),
         Create=views.name,
     )
-    mixed_api = api(
+    mixed_api = project(
         User,
         renderer=PydanticRenderer(),
         renameUserCity=views.name,
@@ -122,7 +122,7 @@ def test_required_wrapper_works_for_dataclass_output():
         address: Address | None
 
     views = views_for(User)
-    user_api = api(
+    user_api = project(
         User,
         renderer=DataclassRenderer(),
         Create=required(views.address.city),
@@ -144,7 +144,7 @@ def test_optional_wrapper_works_for_dataclass_output():
         address: Address | None
 
     views = views_for(User)
-    user_api = api(
+    user_api = project(
         User,
         renderer=DataclassRenderer(),
         Create=optional(views.address.city),

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from app import api, renderer, views_for
+from app import project, renderer, views_for
 
 
 @dataclass(kw_only=True)
@@ -18,7 +18,7 @@ class User:
 
 user_views = views_for(User)
 
-UserAPI = api(
+UserAPI = project(
     User,
     renderer=renderer.Pydantic,
     Create=user_views.name

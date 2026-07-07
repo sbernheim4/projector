@@ -13,7 +13,7 @@ Output can be: Pydantic models, dataclass models, attrs classes, or TypedDict cl
 import sqlite3
 from dataclasses import dataclass
 
-from app import api, optional, renderer, required, views_for
+from app import project, optional, renderer, required, views_for
 
 
 # Application specific domain models:
@@ -31,7 +31,7 @@ class User:
 
 # Derive operation-specific models.
 views = views_for(User)
-UserAPI = api(
+UserAPI = project(
     User,
     renderer=renderer.Pydantic,
     Create=required(views.name) + optional(views.address.city + views.address.zip),
@@ -66,7 +66,7 @@ application.
 For example:
 
 ```python
-UserAPI = api(
+UserAPI = project(
     User,
     renderer=renderer.Pydantic,
     CreateUserCommand=views.name + views.address.city + views.address.zip,
@@ -91,7 +91,7 @@ If a source model field can be `None`, you can still decide whether a specific
 output must require it or keep it optional:
 
 ```python
-UserAPI = api(
+UserAPI = project(
     User,
     renderer=renderer.Pydantic,
     Create=required(views.address.city),
@@ -205,7 +205,7 @@ Helpful `just` commands
 
 ```bash
 just demo-example
-just fast-api-example
+just fast-project-example
 just stubs
 just test
 just check
@@ -246,7 +246,7 @@ Turns the IR/spec into concrete output classes.
 
 Public orchestration helpers.
 
-- `api()` takes a source model class and builds operation-specific factories
+- `project()` takes a source model class and builds operation-specific factories
 - `build_model_and_factory()` wires renderer output to factories
 
 ### `app.stubgen`

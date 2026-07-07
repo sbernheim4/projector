@@ -10,7 +10,7 @@ import attrs
 
 from app import (
     UNSET,
-    api,
+    project,
     build_entity,
     generate_views_pyi,
     optional,
@@ -29,7 +29,7 @@ def run_example() -> None:
     views = views_for(User)
 
     # Step 2: generate Pydantic models for create/read/update operations.
-    user_api = api(
+    user_api = project(
         User,
         renderer=renderer.Pydantic,
         read=views.name + views.address.city,
@@ -42,7 +42,7 @@ def run_example() -> None:
     update = user_api.update(name=None)
 
     # Step 4: generate dataclass models for the same projections.
-    dataclass_user_api = api(
+    dataclass_user_api = project(
         User,
         renderer=renderer.Dataclass,
         read=views.name + views.address.city,
@@ -54,7 +54,7 @@ def run_example() -> None:
     dataclass_update = dataclass_user_api.update(address={"city": "Paris"})
 
     # Step 6: generate attrs models for the same projections.
-    attrs_user_api = api(
+    attrs_user_api = project(
         User,
         renderer=renderer.Attrs,
         read=views.name + views.address.city,
@@ -80,7 +80,7 @@ def run_example() -> None:
     typed_views = views_for(TypedUser)
 
     # Step 8: generate TypedDict models and use the returned dict values directly.
-    typed_user_api = api(
+    typed_user_api = project(
         TypedUser,
         renderer=renderer.TypedDict,
         create=typed_views.name + typed_views.address.city + typed_views.address.zip,
@@ -99,12 +99,12 @@ def run_example() -> None:
     nullable_views = views_for(NullableUser)
 
     # Step 9: show required/optional selectors on a nullable subtree.
-    required_user_api = api(
+    required_user_api = project(
         NullableUser,
         renderer=renderer.Pydantic,
         create=required(nullable_views.address.city),
     )
-    optional_user_api = api(
+    optional_user_api = project(
         NullableUser,
         renderer=renderer.Pydantic,
         create=optional(nullable_views.address.city),
@@ -149,7 +149,7 @@ def run_example() -> None:
     print("  required instance:", required_address)
     print("  optional instance:", optional_address)
 
-    nullable_api = api(
+    nullable_api = project(
         NullableUser,
         renderer=renderer.Pydantic,
         create=optional(nullable_views.address.city),

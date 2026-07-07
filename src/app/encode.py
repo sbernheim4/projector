@@ -20,7 +20,7 @@ __all__ = [
     "PydanticRenderer",
     "TypedDictRenderer",
     "UNSET",
-    "api",
+    "project",
     "build_entity",
     "build_model_and_factory",
     "compile_projection",
@@ -61,10 +61,10 @@ class EntityAPI:
         raise AttributeError(name)
 
 
-def api(model_cls, renderer, **outputs):
+def project(model_cls, renderer, **outputs):
     if isinstance(model_cls, Entity):
         raise TypeError(
-            "api() accepts a model class; pass User, not build_entity(User)"
+            "project() accepts a model class; pass User, not build_entity(User)"
         )
 
     entity = build_entity(model_cls)

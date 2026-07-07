@@ -1,7 +1,7 @@
 import pytest
 from pydantic import BaseModel, ValidationError
 
-from app.encode import PydanticRenderer, api
+from app.encode import PydanticRenderer, project
 from app import optional, required, views_for
 
 from tests.helpers import build_user_api
@@ -69,7 +69,7 @@ def test_pydantic_source_models_can_render_pydantic_operation_models():
         address: Address
 
     views = views_for(User)
-    user_api = api(
+    user_api = project(
         User,
         renderer=PydanticRenderer(),
         Create=views.name + views.address.city,
@@ -93,7 +93,7 @@ def test_required_wrapper_makes_nullable_subtree_required_in_pydantic():
         address: Address | None
 
     views = views_for(User)
-    user_api = api(
+    user_api = project(
         User,
         renderer=PydanticRenderer(),
         Create=required(views.address.city),
@@ -114,7 +114,7 @@ def test_optional_wrapper_keeps_nullable_subtree_optional_in_pydantic():
         address: Address | None
 
     views = views_for(User)
-    user_api = api(
+    user_api = project(
         User,
         renderer=PydanticRenderer(),
         Create=optional(views.address.city),
@@ -133,7 +133,7 @@ def test_optional_projections_can_be_composed_for_pydantic_output():
         address: Address | None
 
     views = views_for(User)
-    user_api = api(
+    user_api = project(
         User,
         renderer=PydanticRenderer(),
         Create=optional(views.name) + optional(views.address.city),

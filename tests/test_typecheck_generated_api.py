@@ -22,7 +22,7 @@ def _run_typechecker(
     )
 
 
-def test_generated_api_is_typecheckable(tmp_path: Path):
+def test_generated_project_is_typecheckable(tmp_path: Path):
     repo_root = Path(__file__).resolve().parents[1]
     package = tmp_path / "sample"
     package.mkdir()
@@ -33,7 +33,7 @@ def test_generated_api_is_typecheckable(tmp_path: Path):
             """
             from dataclasses import dataclass
 
-            from app import api, renderer, views_for
+            from app import project, renderer, views_for
 
 
             @dataclass(kw_only=True)
@@ -50,7 +50,7 @@ def test_generated_api_is_typecheckable(tmp_path: Path):
 
 
             user_views = views_for(User)
-            UserAPI = api(
+            UserAPI = project(
                 User,
                 renderer=renderer.Pydantic,
                 create=user_views.name + user_views.email + user_views.address.city + user_views.address.zip,

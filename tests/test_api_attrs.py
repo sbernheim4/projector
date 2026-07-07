@@ -1,5 +1,5 @@
 from app import optional, required, views_for
-from app.encode import AttrsRenderer, api, build_entity
+from app.encode import AttrsRenderer, project, build_entity
 
 
 def test_build_entity_supports_attrs_models():
@@ -37,7 +37,7 @@ def test_attrs_models_can_render_attrs_operation_models():
         address: Address
 
     views = views_for(User)
-    user_api = api(
+    user_api = project(
         User,
         renderer=AttrsRenderer(),
         Create=views.name + views.address.city,
@@ -65,7 +65,7 @@ def test_required_wrapper_works_for_attrs_output():
         address: Address | None
 
     views = views_for(User)
-    user_api = api(
+    user_api = project(
         User,
         renderer=AttrsRenderer(),
         Create=required(views.address.city),
@@ -87,7 +87,7 @@ def test_optional_wrapper_works_for_attrs_output():
         address: Address | None
 
     views = views_for(User)
-    user_api = api(
+    user_api = project(
         User,
         renderer=AttrsRenderer(),
         Create=optional(views.address.city),
@@ -109,7 +109,7 @@ def test_nullable_subtree_remains_optional_for_attrs_output():
         address: Address | None
 
     views = views_for(User)
-    user_api = api(
+    user_api = project(
         User,
         renderer=AttrsRenderer(),
         Create=views.address.city,
@@ -132,7 +132,7 @@ def test_optional_projections_can_be_composed_for_attrs_output():
         address: Address | None
 
     views = views_for(User)
-    user_api = api(
+    user_api = project(
         User,
         renderer=AttrsRenderer(),
         Create=optional(views.name) + optional(views.address.city),

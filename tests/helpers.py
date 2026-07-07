@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from app import views_for
-from app.encode import api
+from app.encode import project
 
 
 def build_user_api(renderer):
@@ -18,7 +18,7 @@ def build_user_api(renderer):
 
     views = views_for(User)
 
-    return api(
+    return project(
         User,
         renderer=renderer,
         Create=views.name + views.email + views.address.city + views.address.zip,

@@ -4,8 +4,8 @@ from .encode import (
     PydanticRenderer,
     TypedDictRenderer,
     UNSET,
-    api,
     build_entity,
+    project,
 )
 from .renderer import renderer
 from .stubgen import generate_views_pyi
@@ -17,9 +17,9 @@ __all__ = [
     "PydanticRenderer",
     "TypedDictRenderer",
     "UNSET",
-    "api",
     "build_entity",
     "generate_views_pyi",
+    "project",
     "renderer",
     "required",
     "optional",
