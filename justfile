@@ -4,7 +4,8 @@ test:
 	.venv/bin/pytest -q
 
 stubs:
-	PYTHONPATH=src:. .venv/bin/python scripts/generate_stubs.py
+	PYTHONPATH=src:. .venv/bin/projector stubs examples/demo_example/models.py examples/fast_api_example/projects/models.py examples/fast_api_example/users/models.py
+	PYTHONPATH=src:. .venv/bin/projector module-stubs examples/fast_api_example/http/projects.py examples/fast_api_example/http/ui.py examples/fast_api_example/http/users.py
 
 demo-example:
 	PYTHONPATH=src .venv/bin/python -m examples.demo_example.main

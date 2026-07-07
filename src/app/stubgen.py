@@ -78,15 +78,26 @@ def render_views_stub(_module_name: str, entities: Iterable[Entity]) -> str:
     return "\n".join(parts).rstrip() + "\n"
 
 
-def write_views_stub(module_name: str, entities: Iterable[Entity]) -> Path:
-    module_path = Path(*module_name.split("."))
-    target = module_path.with_suffix(".pyi")
+def write_views_stub(
+    module_name: str,
+    entities: Iterable[Entity],
+    *,
+    target: Path | None = None,
+) -> Path:
+    if target is None:
+        module_path = Path(*module_name.split("."))
+        target = module_path.with_suffix(".pyi")
     target.write_text(render_views_stub(module_name, entities), encoding="utf-8")
     return target
 
 
-def generate_views_pyi(module_name: str, entities: Iterable[Entity]) -> Path:
-    return write_views_stub(module_name, entities)
+def generate_views_pyi(
+    module_name: str,
+    entities: Iterable[Entity],
+    *,
+    target: Path | None = None,
+) -> Path:
+    return write_views_stub(module_name, entities, target=target)
 
 
 def _render_type_expr(field_type: Any) -> str:
@@ -161,8 +172,9 @@ def render_module_class_stubs(module_name: str) -> str:
     return "\n".join(parts).rstrip() + "\n"
 
 
-def write_module_class_stubs(module_name: str) -> Path:
+def write_module_class_stubs(module_name: str, *, target: Path | None = None) -> Path:
     module_path = Path(*module_name.split("."))
-    target = module_path.with_suffix(".pyi")
+    if target is None:
+        target = module_path.with_suffix(".pyi")
     target.write_text(render_module_class_stubs(module_name), encoding="utf-8")
     return target
