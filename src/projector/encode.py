@@ -11,8 +11,8 @@ from .renderers import (
 )
 
 __all__ = [
-    "DataclassRenderer",
     "AttrsRenderer",
+    "DataclassRenderer",
     "Entity",
     "Field",
     "Leaf",
@@ -20,10 +20,10 @@ __all__ = [
     "PydanticRenderer",
     "TypedDictRenderer",
     "UNSET",
-    "project",
     "build_entity",
     "build_model_and_factory",
     "compile_projection",
+    "project",
 ]
 
 
