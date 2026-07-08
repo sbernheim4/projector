@@ -1,6 +1,12 @@
 from pydantic import BaseModel
 
-from ..ir import Field, PydanticFieldDefs, create_pydantic_model, optional_update_type
+from ..ir import (
+    Field,
+    PydanticFieldDefs,
+    annotated_type,
+    create_pydantic_model,
+    optional_update_type,
+)
 from ..naming import pascal_case
 
 
@@ -16,15 +22,16 @@ class PydanticRenderer:
             node = entity.fields[key]
 
             if isinstance(node, Field):
+                field_type = annotated_type(node.type_, node.metadata)
                 if partial:
                     fields[key] = (
-                        optional_update_type(node.type_),
+                        optional_update_type(field_type),
                         None,
                     )
                 elif node.nullable and sub_spec.required is not True:
-                    fields[key] = (optional_update_type(node.type_), None)
+                    fields[key] = (optional_update_type(field_type), None)
                 else:
-                    fields[key] = (node.type_, ...)
+                    fields[key] = (field_type, ...)
             else:
                 nested = self._build_fields(
                     sub_spec.children,
@@ -35,11 +42,12 @@ class PydanticRenderer:
                 nested_model = create_pydantic_model(
                     f"{name}{pascal_case(key)}", nested
                 )
+                field_type = annotated_type(nested_model, node.metadata)
                 if partial and sub_spec.required is not True:
-                    fields[key] = (optional_update_type(nested_model), None)
+                    fields[key] = (optional_update_type(field_type), None)
                 elif node.nullable and sub_spec.required is not True:
-                    fields[key] = (optional_update_type(nested_model), None)
+                    fields[key] = (optional_update_type(field_type), None)
                 else:
-                    fields[key] = (nested_model, ...)
+                    fields[key] = (field_type, ...)
 
         return fields

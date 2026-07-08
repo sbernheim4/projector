@@ -10,5 +10,5 @@ class DataclassSourceAdapter:
         return cls.__name__
 
     def fields_for(self, cls: type) -> dict[str, Any]:
-        hints = get_type_hints(cls)
+        hints = get_type_hints(cls, include_extras=True)
         return {field.name: hints[field.name] for field in dc_fields(cls)}

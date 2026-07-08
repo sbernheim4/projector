@@ -2,7 +2,7 @@ from typing import Any, cast
 
 import attrs
 
-from ..ir import Field
+from ..ir import Field, annotated_type
 from ..naming import pascal_case
 
 
@@ -28,7 +28,7 @@ class AttrsRenderer:
             node = entity.fields[key]
 
             if isinstance(node, Field):
-                field_type = node.type_
+                field_type = annotated_type(node.type_, node.metadata)
             else:
                 field_type = self._build_model(
                     sub_spec.children,
@@ -37,6 +37,7 @@ class AttrsRenderer:
                     partial=partial,
                 )
                 conversion_plan[key] = field_type
+                field_type = annotated_type(field_type, node.metadata)
 
             if partial and sub_spec.required is not True:
                 class_fields[key] = attrs.field(

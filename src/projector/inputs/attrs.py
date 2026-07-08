@@ -11,4 +11,4 @@ class AttrsSourceAdapter:
         return cls.__name__
 
     def fields_for(self, cls: type) -> dict[str, Any]:
-        return get_type_hints(cls)
+        return get_type_hints(cls, include_extras=True)

@@ -1,7 +1,7 @@
 from dataclasses import make_dataclass
 from typing import Any
 
-from ..ir import Field, UNSET, dataclass_update_type
+from ..ir import Field, UNSET, annotated_type, dataclass_update_type
 from ..naming import pascal_case
 
 
@@ -27,7 +27,7 @@ class DataclassRenderer:
             node = entity.fields[key]
 
             if isinstance(node, Field):
-                field_type = node.type_
+                field_type = annotated_type(node.type_, node.metadata)
             else:
                 field_type = self._build_model(
                     sub_spec.children,
@@ -36,6 +36,7 @@ class DataclassRenderer:
                     partial=partial,
                 )
                 conversion_plan[key] = field_type
+                field_type = annotated_type(field_type, node.metadata)
 
             if partial and sub_spec.required is not True:
                 dataclass_fields.append(

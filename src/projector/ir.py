@@ -1,7 +1,7 @@
 from collections.abc import Callable
 from dataclasses import dataclass
 from types import NoneType, UnionType
-from typing import Any, TypeVar, Union, cast, get_args, get_origin
+from typing import Annotated, Any, TypeVar, Union, cast, get_args, get_origin
 
 from pydantic import BaseModel, create_model
 
@@ -12,6 +12,7 @@ from .inputs import DEFAULT_SOURCE_ADAPTERS, SourceAdapter, find_source_adapter
 class Field:
     type_: Any
     nullable: bool = False
+    metadata: tuple[Any, ...] = ()
 
 
 @dataclass
@@ -19,6 +20,7 @@ class Entity:
     name: str
     fields: dict[str, Any]
     nullable: bool = False
+    metadata: tuple[Any, ...] = ()
 
 
 PydanticFieldDefs = dict[str, tuple[Any, Any]]
@@ -49,13 +51,41 @@ def create_pydantic_model(name: str, fields: PydanticFieldDefs) -> type[BaseMode
     return typed_create_model(name, **fields)
 
 
+def annotated_type(type_: Any, metadata: tuple[Any, ...]) -> Any:
+    if not metadata:
+        return type_
+    return Annotated[type_, *metadata]
+
+
+def unwrap_annotated(type_: Any) -> tuple[Any, tuple[Any, ...]]:
+    metadata: list[Any] = []
+
+    while get_origin(type_) is Annotated:
+        args = get_args(type_)
+        type_ = args[0]
+        metadata.extend(args[1:])
+
+    return type_, tuple(metadata)
+
+
 def unwrap_optional(type_: Any) -> tuple[Any, bool]:
+    type_, outer_metadata = unwrap_annotated(type_)
     origin = get_origin(type_)
     if origin is Union or origin is UnionType:
         args = tuple(arg for arg in get_args(type_) if arg is not NoneType)
         if len(args) == 1 and len(get_args(type_)) == 2:
-            return args[0], True
-    return type_, False
+            unwrapped_type, inner_metadata = unwrap_annotated(args[0])
+            return annotated_type(
+                unwrapped_type,
+                inner_metadata + outer_metadata,
+            ), True
+    return annotated_type(type_, outer_metadata), False
+
+
+def split_field_type(type_: Any) -> tuple[Any, bool, tuple[Any, ...]]:
+    field_type, nullable = unwrap_optional(type_)
+    field_type, metadata = unwrap_annotated(field_type)
+    return field_type, nullable, metadata
 
 
 def build_entity(
@@ -72,7 +102,7 @@ def build_entity(
     schema: dict[str, Entity | Field] = {}
 
     for field_name, field_type in source_adapter.fields_for(cls).items():
-        field_type, nullable = unwrap_optional(field_type)
+        field_type, nullable, metadata = split_field_type(field_type)
         nested_adapter = find_source_adapter(field_type, adapters)
 
         if nested_adapter is not None:
@@ -82,8 +112,9 @@ def build_entity(
                 adapters=adapters,
             )
             entity.nullable = nullable
+            entity.metadata = metadata
             schema[field_name] = entity
         else:
-            schema[field_name] = Field(field_type, nullable=nullable)
+            schema[field_name] = Field(field_type, nullable=nullable, metadata=metadata)
 
     return Entity(source_adapter.name_for(cls), schema)

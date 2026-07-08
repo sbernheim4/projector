@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import Any, TypedDict, cast
 
-from ..ir import Field
+from ..ir import Field, annotated_type
 from ..naming import pascal_case
 
 
@@ -22,19 +23,8 @@ class TypedDictRenderer:
         return model_cls(**kwargs)
 
     def _make_typed_dict(self, name: str, annotations: dict[str, Any]) -> type[Any]:
-        namespace = {"TypedDict": TypedDict}
-        fields = "\n".join(
-            f"    {field_name}: {self._annotation_expr(field_type)}"
-            for field_name, field_type in annotations.items()
-        )
-        source = f"class {name}(TypedDict):\n{fields or '    pass'}\n"
-        exec(source, namespace)
-        return cast(type[Any], namespace[name])
-
-    def _annotation_expr(self, field_type: Any) -> str:
-        if getattr(field_type, "__module__", "") == "builtins":
-            return field_type.__name__
-        return getattr(field_type, "__name__", "Any")
+        typed_dict_factory = cast(Callable[[str, dict[str, Any]], type[Any]], TypedDict)
+        return typed_dict_factory(name, annotations)
 
     def _build_schema(
         self,
@@ -50,7 +40,7 @@ class TypedDictRenderer:
             node = entity.fields[key]
 
             if isinstance(node, Field):
-                field_type = node.type_
+                field_type = annotated_type(node.type_, node.metadata)
             else:
                 nested_annotations, _, _ = self._build_schema(
                     sub_spec.children,
@@ -60,6 +50,7 @@ class TypedDictRenderer:
                 field_type = self._make_typed_dict(
                     f"{entity.name}{pascal_case(key)}", nested_annotations
                 )
+                field_type = annotated_type(field_type, node.metadata)
 
             if node.nullable and sub_spec.required is not True:
                 field_type = field_type | None
