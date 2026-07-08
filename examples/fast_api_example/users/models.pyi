@@ -13,11 +13,13 @@ class AddressView:
 address_views: AddressView
 
 class User:
+    id: int
     name: str
     email: str
     address: Address
 
 class UserView:
+    id: Leaf[int]
     name: Leaf[str]
     email: Leaf[str]
     address: AddressView
@@ -46,21 +48,65 @@ class UserCreateView:
 
 usercreate_views: UserCreateView
 
-class UserRenameUserCityAddress:
+class UserListItemAddress:
     city: str
 
-class UserRenameUserCityAddressView:
+class UserListItemAddressView:
     city: Leaf[str]
 
-userrenameusercityaddress_views: UserRenameUserCityAddressView
+userlistitemaddress_views: UserListItemAddressView
 
-class UserRenameUserCity:
-    address: UserRenameUserCityAddress
+class UserListItem:
+    id: int
+    name: str
+    address: UserListItemAddress
 
-class UserRenameUserCityView:
-    address: UserRenameUserCityAddressView
+class UserListItemView:
+    id: Leaf[int]
+    name: Leaf[str]
+    address: UserListItemAddressView
 
-userrenameusercity_views: UserRenameUserCityView
+userlistitem_views: UserListItemView
+
+class UserReadAddress:
+    city: str
+    zip: str
+
+class UserReadAddressView:
+    city: Leaf[str]
+    zip: Leaf[str]
+
+userreadaddress_views: UserReadAddressView
+
+class UserRead:
+    id: int
+    name: str
+    email: str
+    address: UserReadAddress
+
+class UserReadView:
+    id: Leaf[int]
+    name: Leaf[str]
+    email: Leaf[str]
+    address: UserReadAddressView
+
+userread_views: UserReadView
+
+class UserRenameCityAddress:
+    city: str
+
+class UserRenameCityAddressView:
+    city: Leaf[str]
+
+userrenamecityaddress_views: UserRenameCityAddressView
+
+class UserRenameCity:
+    address: UserRenameCityAddress
+
+class UserRenameCityView:
+    address: UserRenameCityAddressView
+
+userrenamecity_views: UserRenameCityView
 
 class UserUpdateAddress:
     city: str
@@ -91,7 +137,11 @@ def views_for(model_cls: type[User]) -> UserView: ...
 @overload
 def views_for(model_cls: type[UserCreate]) -> UserCreateView: ...
 @overload
-def views_for(model_cls: type[UserRenameUserCity]) -> UserRenameUserCityView: ...
+def views_for(model_cls: type[UserListItem]) -> UserListItemView: ...
+@overload
+def views_for(model_cls: type[UserRead]) -> UserReadView: ...
+@overload
+def views_for(model_cls: type[UserRenameCity]) -> UserRenameCityView: ...
 @overload
 def views_for(model_cls: type[UserUpdate]) -> UserUpdateView: ...
 def views_for(model_cls: type[object]) -> Any: ...

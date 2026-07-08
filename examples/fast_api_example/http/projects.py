@@ -16,6 +16,8 @@ from ..projects.models import (
     ProjectAddTask,
     ProjectCompleteTask,
     ProjectCreate,
+    ProjectListItem,
+    ProjectRead,
     ProjectUpdate,
 )
 
@@ -24,7 +26,9 @@ router: APIRouter = APIRouter()
 conn.register(Project, "projects", row_to_project)
 
 
-@router.post("/projects", response_model=ProjectCreate)
+@router.post(
+    "/projects", response_model=ProjectRead, status_code=201, tags=["projects"]
+)
 def create(project: ProjectCreate):
     row = create_project(conn, project)
     if row is None:
@@ -32,12 +36,12 @@ def create(project: ProjectCreate):
     return row
 
 
-@router.get("/projects", response_model=list[Project])
+@router.get("/projects", response_model=list[ProjectListItem], tags=["projects"])
 def list_all():
     return list_projects(conn)
 
 
-@router.get("/projects/{project_id}", response_model=Project)
+@router.get("/projects/{project_id}", response_model=ProjectRead, tags=["projects"])
 def get_one(project_id: int):
     row = get_project(conn, project_id)
     if row is None:
@@ -45,7 +49,7 @@ def get_one(project_id: int):
     return row
 
 
-@router.put("/projects/{project_id}", response_model=ProjectUpdate)
+@router.patch("/projects/{project_id}", response_model=ProjectRead, tags=["projects"])
 def update(project_id: int, project: ProjectUpdate):
     row = update_project(conn, project_id, project)
     if row is None:
@@ -53,13 +57,17 @@ def update(project_id: int, project: ProjectUpdate):
     return row
 
 
-@router.delete("/projects/{project_id}")
+@router.delete("/projects/{project_id}", status_code=204, tags=["projects"])
 def delete(project_id: int):
     delete_project(conn, project_id)
-    return {"deleted": True}
+    return None
 
 
-@router.post("/projects/{project_id}/commands/add-task", response_model=ProjectAddTask)
+@router.post(
+    "/projects/{project_id}/commands/add-task",
+    response_model=ProjectRead,
+    tags=["projects"],
+)
 def add(project_id: int, command: ProjectAddTask):
     row = add_task(conn, project_id, command)
     if row is None:
@@ -68,7 +76,9 @@ def add(project_id: int, command: ProjectAddTask):
 
 
 @router.post(
-    "/projects/{project_id}/commands/complete-task", response_model=ProjectCompleteTask
+    "/projects/{project_id}/commands/complete-task",
+    response_model=ProjectRead,
+    tags=["projects"],
 )
 def complete(project_id: int, command: ProjectCompleteTask):
     row = complete_task(conn, project_id, command)

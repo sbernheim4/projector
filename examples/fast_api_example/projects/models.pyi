@@ -13,11 +13,13 @@ class TaskView:
 task_views: TaskView
 
 class Project:
+    id: int
     name: str
     description: str
     task: Task
 
 class ProjectView:
+    id: Leaf[int]
     name: Leaf[str]
     description: Leaf[str]
     task: TaskView
@@ -78,6 +80,50 @@ class ProjectCreateView:
 
 projectcreate_views: ProjectCreateView
 
+class ProjectListItemTask:
+    title: str
+
+class ProjectListItemTaskView:
+    title: Leaf[str]
+
+projectlistitemtask_views: ProjectListItemTaskView
+
+class ProjectListItem:
+    id: int
+    name: str
+    task: ProjectListItemTask
+
+class ProjectListItemView:
+    id: Leaf[int]
+    name: Leaf[str]
+    task: ProjectListItemTaskView
+
+projectlistitem_views: ProjectListItemView
+
+class ProjectReadTask:
+    title: str
+    done: bool
+
+class ProjectReadTaskView:
+    title: Leaf[str]
+    done: Leaf[bool]
+
+projectreadtask_views: ProjectReadTaskView
+
+class ProjectRead:
+    id: int
+    name: str
+    description: str
+    task: ProjectReadTask
+
+class ProjectReadView:
+    id: Leaf[int]
+    name: Leaf[str]
+    description: Leaf[str]
+    task: ProjectReadTaskView
+
+projectread_views: ProjectReadView
+
 class ProjectUpdateTask:
     title: str
     done: bool
@@ -108,6 +154,10 @@ def views_for(model_cls: type[ProjectAddTask]) -> ProjectAddTaskView: ...
 def views_for(model_cls: type[ProjectCompleteTask]) -> ProjectCompleteTaskView: ...
 @overload
 def views_for(model_cls: type[ProjectCreate]) -> ProjectCreateView: ...
+@overload
+def views_for(model_cls: type[ProjectListItem]) -> ProjectListItemView: ...
+@overload
+def views_for(model_cls: type[ProjectRead]) -> ProjectReadView: ...
 @overload
 def views_for(model_cls: type[ProjectUpdate]) -> ProjectUpdateView: ...
 @overload
