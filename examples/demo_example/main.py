@@ -125,7 +125,9 @@ def run_example() -> None:
     print("  read model:", dataclass_user_models.read_model)
     print("  update model:", dataclass_user_models.update_model)
     print("  update instance:", dataclass_update)
-    print("  update model is dataclass:", is_dataclass(dataclass_user_models.update_model))
+    print(
+        "  update model is dataclass:", is_dataclass(dataclass_user_models.update_model)
+    )
     print("  omitted name is UNSET:", dataclass_update.name is UNSET)
 
     print("Attrs Models")
