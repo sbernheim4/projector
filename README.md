@@ -1,10 +1,21 @@
 # Projector
 
-Eliminate model explosion by deriving fully typed, operation-specific Python models from existing domain models by declaratively specifying the properties you want.
+Eliminate model explosion by deriving fully typed, operation-specific Python
+models from existing domain models by declaratively specifying the properties
+you want.
 
-Your application domain models (the input to projector) can be written using: dataclasses, Pydantic models, TypedDict classes, attrs classes, and plain annotated classes.
+Instead of maintaining separate `CreateUser`, `ReadUser`, `UpdateUser`, request
+and response models by hand (or equivalent command models for RPC-style APIs),
+you describe the fields each operation needs and Projector builds the output
+models at runtime.
 
-Projector can output the derived models in: Pydantic, dataclass, attrs, or TypedDict.
+```text
+domain models -> typed field projection -> generated operation models
+```
+
+Projector is useful when your API, command, or service boundary needs many
+model variants that mostly differ by selected fields, requiredness, or output
+target.
 
 ## Installation
 
@@ -12,23 +23,23 @@ Projector can output the derived models in: Pydantic, dataclass, attrs, or Typed
 pip install model-projector
 ```
 
-The distribution name is `model-projector`, and the import package is
-`projector`:
+The PyPI distribution is named `model-projector`. The Python import package is
+named `projector`:
 
 ```python
 from projector import project, renderer, views_for
 ```
 
-## Example
+Projector requires Python 3.12 or newer.
+
+## Quickstart
 
 ```python
-import sqlite3
 from dataclasses import dataclass
 
 from projector import project, optional, renderer, required, views_for
 
 
-# Application specific domain models:
 @dataclass(kw_only=True)
 class Address:
     city: str
@@ -38,168 +49,197 @@ class Address:
 @dataclass(kw_only=True)
 class User:
     name: str
+    email: str
     address: Address
 
 
-# Derive operation-specific models.
 views = views_for(User)
+
 UserModels = project(
     User,
     renderer=renderer.Pydantic,
-    Create=required(views.name) + optional(views.address.city + views.address.zip),
-    Read=optional(views.name) + optional(views.address.city),
+    Create=(
+        required(views.name + views.email)
+        + optional(views.address.city + views.address.zip)
+    ),
+    Read=views.name + views.email + views.address.city,
     Update=views.name,
 )
+
 UserCreate = UserModels.CreateModel
+UserRead = UserModels.ReadModel
 
-
-# Use the derived user models.
-conn = sqlite3.connect(":memory:")
-conn.execute("create table users (name text, city text, zip text)")
-
-def add_user_to_db(user: UserCreate) -> None:
-    conn.execute(
-        "insert into users (name, city, zip) values (?, ?, ?)",
-        (user.name, user.address.city, user.address.zip),
-    )
-    conn.commit()
-
-
-# Create an instance with the exact keyword argument provided
-new_user = UserModels.Create(name="John", address={"city": "Paris", "zip": "75001"})
-add_user_to_db(new_user)
+created = UserModels.Create(
+    name="Sam",
+    email="sam@example.com",
+    address={"city": "Paris", "zip": "75001"},
+)
+read = UserModels.Read(name="Sam", email="sam@example.com", address={"city": "Paris"})
 ```
 
-## More Info
-
-`Create`, `Read`, and `Update` above are arbitrary. Use whatever names fit your
-application.
-
-For example:
+The output namespace contains generated model classes and matching factory
+functions:
 
 ```python
-UserModels = project(
+UserModels.CreateModel
+UserModels.ReadModel
+UserModels.UpdateModel
+
+UserModels.Create(...)
+UserModels.Read(...)
+UserModels.Update(...)
+```
+
+The names `Create`, `Read`, and `Update` are conventions only. You can use
+operation names that match your application:
+
+```python
+UserCommands = project(
     User,
     renderer=renderer.Pydantic,
-    CreateUserCommand=views.name + views.address.city + views.address.zip,
-    Read=views.name + views.address.city,
-    UpdateNameCommand=views.name,
+    RegisterUser=views.name + views.email,
+    RenameUser=views.name,
 )
 ```
 
-That gives you:
-
-- `UserModels.CreateUserCommandModel`
-- `UserModels.ReadModel`
-- `UserModels.UpdateNameCommandModel`
-
-And functions to instantiate instances:
-
-- `UserModels.CreateUserCommand(...)`
-- `UserModels.Read(...)`
-- `UserModels.UpdateNameCommand(...)`
-
-If a source model field can be `None`, you can still decide whether a specific
-output must require it or keep it optional:
+Snake-case names are supported too:
 
 ```python
-UserModels = project(
-    User,
-    renderer=renderer.Pydantic,
-    Create=required(views.address.city),
-    Read=optional(views.address.city),
-)
+UserModels = project(User, renderer=renderer.Pydantic, create_user=views.name)
+
+UserModels.create_user(...)
+UserModels.create_user_model
 ```
 
-`required(...)` applies to the whole selected subtree. `optional(...)` keeps
-that subtree nullable in the generated output.
+## At a Glance
 
-`snake_case` output names are supported too. If you use `create` or
-`create_user_command`, the generated accessors stay snake_case:
+- Generate operation-specific models from existing domain models.
+- Keep runtime model derivation in Python; no generated source files are needed
+  to run your application.
+- Generate optional `.pyi` files so type checkers and LSPs like ty and pyrefly
+  and understand dynamic field selectors.
+- Projector can ingest models written using dataclasses, Pydantic models, attrs
+  classes, `TypedDict` classes, and plain annotated classes.
+- Projector can output: Pydantic, dataclass, attrs, or `TypedDict` models.
 
-- `UserModels.create`
-- `UserModels.create_model`
-- `UserModels.create_user_command`
-- `UserModels.create_user_command_model`
 
-## Supported input and output types
+## Core Concepts
 
-Input:
+`views_for(Model)` returns a typed selector tree for a source model. Selectors
+can be composed with `+` to describe the fields included in each output model.
+
+`project(Model, renderer=..., **views)` compiles the selected fields and returns
+a namespace containing generated model classes and factory functions.
+
+`required(...)` and `optional(...)` override nullability for a selected subtree.
+This lets a nullable source field be required in one operation and optional in
+another.
+
+`Update` is currently special-cased as a partial update model. Other output
+names are treated as full models.
+
+`build_entity(Model)` is the lower-level schema IR helper. Most users should
+call `project(...)` with the source model class directly.
+
+## Supported Models
+
+Projector can read these source model shapes:
+
 - dataclasses
 - Pydantic models
-- plain annotated classes
 - attrs classes
 - `TypedDict` classes
+- plain annotated classes
 
-Output:
+Projector can generate these output model shapes:
+
 - Pydantic models
 - dataclass models
 - attrs classes
 - `TypedDict` classes
 
-## Core Concepts
+Choose the output target with a renderer:
 
-`project(...)` is the main runtime entry point. It takes a source model class,
-selected fields, and a renderer, then returns a namespace containing generated
-model classes and factory functions.
+```python
+from projector import renderer
 
-`views_for(...)` creates typed selectors for a source model. Use these selectors
-to describe which fields belong in each generated output model.
+renderer.Pydantic
+renderer.Dataclass
+renderer.Attrs
+renderer.TypedDict
+```
 
-`projector type-stubs` is the type-checker build step. It writes sibling `.pyi`
-files so LSPs and type checkers can understand dynamic `views_for(...)`
-attributes. These files are not executed at runtime.
+Renderer classes are also exported directly:
 
-`build_entity(...)` is the lower-level IR helper. Normal users should not need
-it for `project(...)`, but it remains public for debugging, tests, and tooling
-that wants to inspect the derived schema.
+```python
+from projector import PydanticRenderer, DataclassRenderer
+```
 
-## Type Checking Build Step
+## Public API
 
-Projector currently derives models dynamically at runtime. Runtime use does not
-require generated files, but static type checkers like ty and pyrefly need
-`.pyi` files to understand the dynamic view objects returned by
-`views_for(...)`.
+Most users only need:
 
-Generate those type checker stubs with the CLI:
+```python
+from projector import project, renderer, views_for
+```
+
+Additional helpers are exported for requiredness, direct renderer classes, stub
+generation, and lower-level schema inspection:
+
+```python
+from projector import (
+    AttrsRenderer,
+    DataclassRenderer,
+    PydanticRenderer,
+    TypedDictRenderer,
+    UNSET,
+    build_entity,
+    generate_views_pyi,
+    optional,
+    required,
+)
+```
+
+## Type Checking
+
+Projector derives models dynamically at runtime. Runtime use does not require
+generated files.
+
+Static type checkers and LSPs need one extra step for dynamic `views_for(...)`
+attributes. Generate sibling `.pyi` files with:
 
 ```bash
 projector type-stubs path/to/models.py path/to/other_models.py
 ```
 
-The command accepts one or more Python file paths and writes sibling `.pyi`
-files:
+Example:
 
 ```text
-examples/demo_example/models.py -> examples/demo_example/models.pyi
+app/models.py -> app/models.pyi
 ```
 
-## Example Layout
+Run this command after changing source model definitions. The generated stubs
+are for type checkers and language servers; they are not imported at runtime.
 
-The `examples/` directory contains fully isolated consumer examples.
+## Examples
+
+The repository includes two isolated examples:
 
 ```text
-examples/demo_example/        Demo domain models and runnable example
-examples/fast_api_example/    An example with a FastAPI HTTP server with CRUD and command style generated models
+examples/demo_example/        Small end-to-end demo
+examples/fast_api_example/    FastAPI CRUD and command-style demo
 ```
 
-Run the demo example:
+From a checkout of this repository:
 
 ```bash
 just demo-example
-# or
-PYTHONPATH=src uv run python -m examples.demo_example.main
-```
-
-Run the FastAPI example:
-
-```bash
 just fast-api-example
-# or
-PYTHONPATH=src .venv/bin/python -m examples.fast_api_example.http.main
 ```
 
-Helpful `just` commands
+## Development
+
+Useful common commands:
 
 ```bash
 just test
@@ -209,90 +249,42 @@ just demo-example
 just fast-api-example
 ```
 
-## Publishing
+`just check` runs Ruff, ty, and pyrefly.
 
-Projector is configured as a Python package in `pyproject.toml`. The package
-uses the `model-projector` distribution name because `projector` is already
-taken on PyPI.
+## Contributing
 
-Build the source distribution and wheel:
+Issues and pull requests are welcome. Before opening a change, run:
 
 ```bash
-uv build
-# or
-python -m build
+just test
+just check
 ```
 
-Validate the built package metadata:
+If you change example model definitions, regenerate their type stubs:
 
 ```bash
-python -m twine check dist/*
+just stubs
 ```
 
-Upload to TestPyPI first:
+## Releasing
+
+Releases are published to PyPI as `model-projector` by GitHub Actions using PyPI
+Trusted Publishing. No PyPI API token is stored in the repository.
+
+For maintainers, create a patch, minor, or major release with:
 
 ```bash
-python -m twine upload --repository testpypi dist/*
+just bump patch
+just bump minor
+just bump major
 ```
 
-Install-test from TestPyPI:
+The `bump` recipe updates the version with `uv version`, runs tests and checks,
+pushes `main`, creates a matching `vX.Y.Z` tag, and pushes the tag. The tag
+triggers the PyPI publishing workflow.
 
-```bash
-python -m pip install \
-  --index-url https://test.pypi.org/simple/ \
-  --extra-index-url https://pypi.org/simple/ \
-  model-projector
-```
+Manual workflow runs publish to TestPyPI only.
 
-Upload the same distributions to PyPI after the TestPyPI package installs and
-imports correctly:
+## License
 
-```bash
-python -m twine upload dist/*
-```
-
-PyPI and TestPyPI require separate accounts and API tokens.
-
-## Library Structure
-
-### `projector.ir`
-
-Builds the schema IR from user models.
-
-- `Entity` is a structured schema node
-- `Field` is a primitive leaf node
-- `build_entity()` introspects supported input models into the lower-level IR
-
-### `projector.projection`
-
-Builds and compiles typed projections.
-
-- `views_for()` returns a tree of selectable fields
-- `Leaf` supports `+` composition
-- `compile_projection()` turns selections into nested specs
-
-### `projector.renderers`
-
-Turns the IR/spec into concrete output classes.
-
-- `PydanticRenderer`
-- `DataclassRenderer`
-- `AttrsRenderer`
-- `TypedDictRenderer`
-- `renderer.Pydantic`
-- `renderer.Dataclass`
-- `renderer.Attrs`
-- `renderer.TypedDict`
-
-### `projector.encode`
-
-Public orchestration helpers.
-
-- `project()` takes a source model class and builds operation-specific factories
-- `build_model_and_factory()` wires renderer output to factories
-
-### `projector.stubgen`
-
-Stub generation helpers.
-
-- `generate_views_pyi()` writes a `.pyi` file next to a consumer model module
+Projector is distributed under the MIT License. See [LICENSE](LICENSE).
