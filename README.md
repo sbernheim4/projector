@@ -6,6 +6,18 @@ Your application domain models (the input to projector) can be written using: da
 
 Projector can output the derived models in: Pydantic, dataclass, attrs, or TypedDict.
 
+## Installation
+
+```bash
+pip install model-projector
+```
+
+The distribution name is `model-projector`, and the import package is
+`projector`:
+
+```python
+from projector import project, renderer, views_for
+```
 
 ## Example
 
@@ -196,6 +208,50 @@ just stubs
 just demo-example
 just fast-api-example
 ```
+
+## Publishing
+
+Projector is configured as a Python package in `pyproject.toml`. The package
+uses the `model-projector` distribution name because `projector` is already
+taken on PyPI.
+
+Build the source distribution and wheel:
+
+```bash
+uv build
+# or
+python -m build
+```
+
+Validate the built package metadata:
+
+```bash
+python -m twine check dist/*
+```
+
+Upload to TestPyPI first:
+
+```bash
+python -m twine upload --repository testpypi dist/*
+```
+
+Install-test from TestPyPI:
+
+```bash
+python -m pip install \
+  --index-url https://test.pypi.org/simple/ \
+  --extra-index-url https://pypi.org/simple/ \
+  model-projector
+```
+
+Upload the same distributions to PyPI after the TestPyPI package installs and
+imports correctly:
+
+```bash
+python -m twine upload dist/*
+```
+
+PyPI and TestPyPI require separate accounts and API tokens.
 
 ## Library Structure
 

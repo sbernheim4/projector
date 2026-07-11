@@ -1,23 +1,70 @@
 [project]
-name = "projector"
+name = "model-projector"
 version = "0.1.0"
-description = "Add your description here"
+description = "Derive operation-specific API models from existing Python domain models."
 readme = "README.md"
 requires-python = ">=3.12"
+authors = [
+    { name = "Sam Bernheim", email = "sambernheim@icloud.com" },
+]
+license = "MIT"
+license-files = ["LICENSE"]
+keywords = [
+    "api-models",
+    "attrs",
+    "dataclasses",
+    "pydantic",
+    "typeddict",
+    "typing",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
+]
 dependencies = [
     "attrs>=24.2.0",
-    "fastapi>=0.115.0",
     "pydantic>=2.13.4",
-    "pytest>=8.4.2",
-    "watchfiles>=1.1.0",
-    "uvicorn>=0.34.0",
 ]
+
+[project.optional-dependencies]
+examples = [
+    "fastapi>=0.115.0",
+    "uvicorn>=0.34.0",
+    "watchfiles>=1.1.0",
+]
+test = [
+    "pytest>=8.4.2",
+]
+check = [
+    "pyrefly>=1.1.1",
+    "ruff>=0.15.20",
+    "ty>=0.0.55",
+]
+dev = [
+    "fastapi>=0.115.0",
+    "pyrefly>=1.1.1",
+    "pytest>=8.4.2",
+    "ruff>=0.15.20",
+    "ty>=0.0.55",
+    "uvicorn>=0.34.0",
+    "watchfiles>=1.1.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/sbernheim4/projector"
+Repository = "https://github.com/sbernheim4/projector"
+Issues = "https://github.com/sbernheim4/projector/issues"
 
 [project.scripts]
 projector = "projector.cli:main"
 
 [build-system]
-requires = ["setuptools>=61", "wheel"]
+requires = ["setuptools>=77.0.3", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
@@ -25,6 +72,9 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+projector = ["py.typed"]
 
 [tool.uv]
 package = true
