@@ -1,12 +1,13 @@
 set shell := ["bash", "-lc"]
+export UV_CACHE_DIR := env_var_or_default("UV_CACHE_DIR", ".uv-cache")
 
 test:
-	.venv/bin/pytest -q
+	uv run --extra test pytest -q
 
 check:
-	ruff check .
-	ty check .
-	pyrefly check .
+	uv run --extra dev ruff check .
+	uv run --extra dev ty check .
+	uv run --extra dev pyrefly check .
 
 bump kind:
 	case "{{kind}}" in major|minor|patch) ;; *) echo "usage: just bump [major|minor|patch]"; exit 2 ;; esac
@@ -20,13 +21,13 @@ bump kind:
 	git push origin "v$(uv version --short)"
 
 benchmark:
-	PYTHONPATH=src .venv/bin/python benchmarks/benchmark_projector.py
+	PYTHONPATH=src uv run python benchmarks/benchmark_projector.py
 
 stubs:
-	PYTHONPATH=src:. .venv/bin/projector type-stubs examples/demo_example/models.py examples/fast_api_example/projects/models.py examples/fast_api_example/users/models.py
+	PYTHONPATH=src:. uv run --extra examples projector type-stubs examples/demo_example/models.py examples/fast_api_example/projects/models.py examples/fast_api_example/users/models.py
 
 demo-example:
-	PYTHONPATH=src .venv/bin/python -m examples.demo_example.main
+	PYTHONPATH=src uv run python -m examples.demo_example.main
 
 fast-api-example:
-	PYTHONPATH=src .venv/bin/python -m examples.fast_api_example.http.main
+	PYTHONPATH=src uv run --extra examples python -m examples.fast_api_example.http.main
